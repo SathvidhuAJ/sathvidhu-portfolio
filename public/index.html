@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#08090d">
+  <meta name="description" content="Professional developer portfolio showcasing web applications, software projects and modern technology solutions.">
+  <meta property="og:title" content="Sathvidhu A J — Software Developer">
+  <meta property="og:description" content="Full-stack developer portfolio featuring real-world web applications, business systems and modern technology solutions.">
+  <meta property="og:type" content="website">
+  <title>Sathvidhu A J — Software Developer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%2308090d'/%3E%3Ctext x='50' y='67' font-size='52' text-anchor='middle' fill='%236ea8ff' font-family='Arial'%3ESA%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/theme.css">
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <header class="nav-wrap">
+    <nav class="nav container" aria-label="Primary navigation">
+      <a class="brand" href="#home" aria-label="Sathvidhu A J home">
+        <span class="brand-mark">SA</span>
+        <span>Sathvidhu A J</span>
+      </a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Open navigation" aria-expanded="false"><span></span><span></span></button>
+      <div class="nav-links" id="navLinks">
+        <a class="nav-link active" href="#home">Home</a>
+        <a class="nav-link" href="#projects">Projects</a>
+        <a class="nav-link" href="#contact">Contact</a>
+        <a class="resume-btn" href="#contact">View Resume <span>↗</span></a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home" class="hero section container">
+      <div class="hero-copy reveal">
+        <div class="eyebrow"><span class="status-dot"></span> Available for selected opportunities</div>
+        <h1>Building Digital<br><span>Experiences</span><br>That Actually Work.</h1>
+        <p class="hero-role">Software Developer <i>•</i> Full-Stack Development <i>•</i> Cloud &amp; Modern Web Technologies</p>
+        <p class="hero-description">I'm a developer focused on building modern web applications, business systems and user-focused digital products using technologies across frontend, backend, databases and cloud platforms.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary magnetic" href="#projects">View My Projects <span>↓</span></a>
+          <a class="btn btn-ghost magnetic" href="#contact">Contact Me <span>↗</span></a>
+        </div>
+        <div class="hero-meta"><span>Kerala, India</span><span class="meta-line"></span><span>Building with intent</span></div>
+      </div>
+
+      <div class="hero-visual reveal reveal-delay" aria-label="Abstract developer workspace illustration">
+        <div class="visual-orbit orbit-one"></div><div class="visual-orbit orbit-two"></div>
+        <div class="code-window glass-card">
+          <div class="window-bar"><span></span><span></span><span></span><small>developer.js</small></div>
+          <div class="code-lines">
+            <p><b>01</b><span class="kw">const</span> <span class="var">developer</span> = {</p>
+            <p><b>02</b>&nbsp;&nbsp;focus: <span class="str">"real products"</span>,</p>
+            <p><b>03</b>&nbsp;&nbsp;stack: [<span class="str">"web"</span>, <span class="str">"cloud"</span>],</p>
+            <p><b>04</b>&nbsp;&nbsp;quality: <span class="bool">true</span>,</p>
+            <p><b>05</b>&nbsp;&nbsp;ship: () =&gt; <span class="str">"done"</span></p>
+            <p><b>06</b>};</p>
+          </div>
+          <div class="terminal-line"><span class="terminal-dot"></span> system ready<span class="cursor">_</span></div>
+        </div>
+        <div class="float-chip chip-react"><span class="chip-icon">⚛</span> React</div>
+        <div class="float-chip chip-db"><span class="chip-icon">◈</span> PostgreSQL</div>
+        <div class="float-chip chip-docker"><span class="chip-icon">◆</span> Docker</div>
+        <div class="visual-caption"><span>01</span><span>Engineering / UI / Product</span></div>
+      </div>
+    </section>
+
+    <section class="about section container">
+      <div class="section-kicker reveal">01 / WHO I AM</div>
+      <div class="about-grid">
+        <div class="reveal"><h2>Developer mindset,<br><em>product thinking.</em></h2></div>
+        <div class="about-copy reveal reveal-delay"><p>I build software with equal attention to how it works and how it feels. From business workflows and databases to responsive interfaces and deployment, I like understanding the whole system.</p><p class="muted">The goal is simple: useful software, clean engineering and an experience people can understand without a manual.</p></div>
+      </div>
+      <div class="capability-grid">
+        <article class="capability reveal"><span>01</span><div><div class="cap-icon">⌘</div><h3>Full-Stack Development</h3><p>Frontend experiences connected to reliable backend logic.</p></div></article>
+        <article class="capability reveal"><span>02</span><div><div class="cap-icon">▦</div><h3>Web Applications</h3><p>Responsive products designed around real user workflows.</p></div></article>
+        <article class="capability reveal"><span>03</span><div><div class="cap-icon">◇</div><h3>Database &amp; Backend Systems</h3><p>Structured data, APIs and business logic built to scale cleanly.</p></div></article>
+        <article class="capability reveal"><span>04</span><div><div class="cap-icon">↗</div><h3>Cloud &amp; Deployment</h3><p>Containerized apps and modern hosted infrastructure.</p></div></article>
+      </div>
+    </section>
+
+    <section class="stack section container">
+      <div class="section-heading reveal"><div><div class="section-kicker">02 / TOOLKIT</div><h2>Tech Stack</h2></div><p>Tools I use to turn ideas into working software.</p></div>
+      <div id="techStack" class="tech-grid"></div>
+    </section>
+
+    <section id="projects" class="projects section container">
+      <div class="section-heading reveal"><div><div class="section-kicker">03 / SELECTED WORK</div><h2>Projects</h2></div><p>Real products, systems and experiments — presented as work, not just screenshots.</p></div>
+      <div class="filters reveal" id="filters"></div>
+      <div class="project-toolbar reveal"><span id="projectCount">04 projects</span><div class="drag-hint">Drag to explore <span>↔</span></div></div>
+      <div class="project-track" id="projectTrack"></div>
+    </section>
+
+    <section id="contact" class="contact section container">
+      <div class="contact-panel reveal">
+        <div class="contact-copy"><div class="section-kicker">04 / CONTACT</div><h2>Let's Build<br><em>Something.</em></h2><p>Have a project, idea, or opportunity?<br>Let's talk.</p><div class="contact-links"><a href="mailto:your@email.com"><span>Email</span><strong>your@email.com</strong></a><a href="https://github.com/yourusername" target="_blank" rel="noreferrer"><span>GitHub</span><strong>github.com/yourusername ↗</strong></a><a href="https://linkedin.com/in/yourusername" target="_blank" rel="noreferrer"><span>LinkedIn</span><strong>linkedin.com/in/yourusername ↗</strong></a><div><span>Location</span><strong>Kerala, India</strong></div></div></div>
+        <form class="contact-form" id="contactForm" novalidate>
+          <label>Name<input name="name" type="text" autocomplete="name" placeholder="Your name"><small></small></label>
+          <label>Email<input name="email" type="email" autocomplete="email" placeholder="you@example.com"><small></small></label>
+          <label>Subject<input name="subject" type="text" placeholder="Project / opportunity"><small></small></label>
+          <label>Message<textarea name="message" rows="6" placeholder="Tell me a little about what you're building..."></textarea><small></small></label>
+          <button class="btn btn-primary submit-btn" type="submit">Send Message <span>↗</span></button>
+          <div class="form-status" id="formStatus" role="status"></div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer container"><div>© 2026 Sathvidhu A J</div><div>Built with passion &amp; clean code.</div><div class="footer-social"><a href="https://github.com/yourusername" target="_blank" rel="noreferrer">GitHub ↗</a><a href="https://linkedin.com/in/yourusername" target="_blank" rel="noreferrer">LinkedIn ↗</a><a href="mailto:your@email.com">Email ↗</a></div></footer>
+
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true"><article class="project-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="modalClose" aria-label="Close project details">×</button><div id="modalVisual"></div><div class="modal-content"><div class="section-kicker" id="modalCategory"></div><h2 id="modalTitle"></h2><p id="modalDescription"></p><div class="modal-columns"><div><h4>Problem</h4><p id="modalProblem"></p></div><div><h4>Solution</h4><p id="modalSolution"></p></div></div><h4>Key Features</h4><ul id="modalFeatures"></ul><div class="modal-tech" id="modalTech"></div><div class="modal-actions" id="modalActions"></div></div></article></div>
+  <script src="/projects.js"></script><script src="/app.js"></script>
+</body>
+</html>
