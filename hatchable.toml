@@ -1,5 +1,0 @@
-# Hatchable project manifest. This file marks the folder as a
-# Hatchable project and declares the services it uses.
-# Reference: https://hatchable.com/docs/developers/config
-name = "Sathvidhu A J — Developer Portfolio"
-description = "A premium three-section professional software developer portfolio focused on full-stack web development, real-world projects, modern technologies, and polished UI/UX."

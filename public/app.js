@@ -496,13 +496,54 @@
       e.preventDefault();
       let valid = true;
       const values = Object.fromEntries(new FormData(form));
-      const rules = {name:['Please enter your name.', v=>v.trim().length>=2],email:['Please enter a valid email.',v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)],subject:['Please add a subject.',v=>v.trim().length>=3],message:['Please write a short message.',v=>v.trim().length>=10]};
-      Object.entries(rules).forEach(([key,[msg,check]])=>{const input=form.elements[key], small=$('small',input.parentElement); const bad=!check(values[key]||''); input.classList.toggle('invalid',bad); small.textContent=bad?msg:''; if(bad)valid=false;});
-      if(!valid){status.textContent='Please check the highlighted fields.';status.style.color='#bd818a';return;}
-      const recipient='sathvidhu@gmail.com';
-      const subject=encodeURIComponent(values.subject); const body=encodeURIComponent(`Name: ${values.name}\nEmail: ${values.email}\n\n${values.message}`);
-      status.textContent='Opening your email client…'; status.style.color='#80c99f';
-      window.location.href=`mailto:${recipient}?subject=${subject}&body=${body}`;
+      const rules = {
+        name: ['Please enter your name.', v => v.trim().length >= 2],
+        email: ['Please enter a valid email.', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)],
+        subject: ['Please add a subject.', v => v.trim().length >= 3],
+        message: ['Please write a short message.', v => v.trim().length >= 10]
+      };
+      Object.entries(rules).forEach(([key, [msg, check]]) => {
+        const input = form.elements[key];
+        const small = $('small', input.parentElement);
+        const bad = !check(values[key] || '');
+        input.classList.toggle('invalid', bad);
+        small.textContent = bad ? msg : '';
+        if (bad) valid = false;
+      });
+
+      if (!valid) {
+        status.textContent = 'Please check the highlighted fields.';
+        status.style.color = '#bd818a';
+        return;
+      }
+
+      status.textContent = 'Sending...';
+      status.style.color = '#80c99f';
+
+      const formData = new FormData(form);
+      if (!formData.get('form-name')) {
+        formData.append('form-name', 'contact');
+      }
+
+      fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(formData).toString()
+      })
+      .then(response => {
+        if (response.ok) {
+          status.textContent = 'Message sent successfully!';
+          status.style.color = '#80c99f';
+          form.reset();
+        } else {
+          throw new Error('Form submission failed');
+        }
+      })
+      .catch(error => {
+        console.error('Netlify Form Error:', error);
+        status.textContent = 'Failed to send message. Please try again.';
+        status.style.color = '#bd818a';
+      });
     });
   }
 })();
