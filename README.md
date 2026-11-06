@@ -64,6 +64,17 @@ The live site is hosted on Netlify. The published files are in the `public/` dir
 
 When the connected Git repository is updated, Netlify can publish the new version automatically according to the site's deploy settings.
 
+## Contact form email notifications
+
+The contact form uses Netlify Forms and submits the visitor's name, email address, subject and message. To receive those submissions by email, enable a form notification in the Netlify site dashboard:
+
+1. Open the site in Netlify and go to **Site configuration** (or **Project configuration**) → **Notifications**.
+2. Find **Form submission notifications** and add an **Email notification**.
+3. Enter the inbox that should receive contact messages and select the `contact` form.
+4. Save the notification and send a test submission from the live website.
+
+Netlify Forms stores submissions in the site's Forms area. Email delivery is controlled by the Netlify notification setting and cannot be enabled by a Git commit alone.
+
 ## Search visibility
 
 The site includes:
