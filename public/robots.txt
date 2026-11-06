@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aj-sath.netlify.app/sitemap.xml
