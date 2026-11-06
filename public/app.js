@@ -250,6 +250,33 @@
   window.addEventListener('resize', updateNavIndicator, { passive: true });
   setTimeout(updateNavIndicator, 250);
 
+  // Keep the navigation highlight in sync with the section currently in view.
+  const sectionLinks = navLinksList.filter(link => link.hash && document.querySelector(link.hash));
+  if ('IntersectionObserver' in window && sectionLinks.length) {
+    const sectionObserver = new IntersectionObserver(entries => {
+      const visible = entries
+        .filter(entry => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!visible) return;
+      navLinksList.forEach(link => link.classList.toggle('active', link.hash === `#${visible.target.id}`));
+      updateNavIndicator();
+    }, { rootMargin: '-20% 0px -65% 0px', threshold: [0, .1, .25, .5] });
+    sectionLinks.forEach(link => sectionObserver.observe(document.querySelector(link.hash)));
+  }
+
+  // Use native smooth scrolling and close the mobile menu after navigation.
+  sectionLinks.forEach(link => link.addEventListener('click', event => {
+    const target = document.querySelector(link.hash);
+    if (!target) return;
+    event.preventDefault();
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    history.replaceState(null, '', link.hash);
+    $('#navLinks')?.classList.remove('open');
+    $('#menuToggle')?.setAttribute('aria-expanded', 'false');
+  }));
+
+
+
   // Tech Stack Filtering & Rendering
   const techStackContainer = $('#techStack');
   const techFiltersContainer = $('#techFilters');
