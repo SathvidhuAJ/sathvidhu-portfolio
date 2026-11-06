@@ -518,23 +518,25 @@
   observeReveals();
 
   const form = $('#contactForm'), status = $('#formStatus');
-  if (form) {
-    form.addEventListener('submit', e => {
+  if (form && status) {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
       let valid = true;
-      const values = Object.fromEntries(new FormData(form));
+      const formData = new FormData(form);
+      const values = Object.fromEntries(formData.entries());
       const rules = {
         name: ['Please enter your name.', v => v.trim().length >= 2],
-        email: ['Please enter a valid email.', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)],
+        email: ['Please enter a valid email.', v => /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(v)],
         subject: ['Please add a subject.', v => v.trim().length >= 3],
         message: ['Please write a short message.', v => v.trim().length >= 10]
       };
-      Object.entries(rules).forEach(([key, [msg, check]]) => {
-        const input = form.elements[key];
-        const small = $('small', input.parentElement);
-        const bad = !check(values[key] || '');
-        input.classList.toggle('invalid', bad);
-        small.textContent = bad ? msg : '';
+
+      Object.entries(rules).forEach(([key, [message, check]]) => {
+        const input = form.elements.namedItem(key);
+        const error = input?.parentElement.querySelector('small');
+        const bad = !check(String(values[key] || ''));
+        input?.classList.toggle('invalid', bad);
+        if (error) error.textContent = bad ? message : '';
         if (bad) valid = false;
       });
 
@@ -544,33 +546,42 @@
         return;
       }
 
-      status.textContent = 'Sending...';
+      // Netlify's honeypot catches simple automated spam submissions.
+      if (String(values['bot-field'] || '').trim()) return;
+
+      const submitButton = form.querySelector('button[type="submit"]');
+      const originalButtonText = submitButton?.innerHTML;
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.setAttribute('aria-busy', 'true');
+        submitButton.textContent = 'Sending...';
+      }
+      status.textContent = 'Sending your message...';
       status.style.color = '#80c99f';
 
-      const formData = new FormData(form);
-      if (!formData.get('form-name')) {
-        formData.append('form-name', 'contact');
-      }
+      try {
+        formData.set('form-name', form.getAttribute('name') || 'contact');
+        const response = await fetch(form.getAttribute('action') || '/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(formData).toString()
+        });
+        if (!response.ok) throw new Error('Netlify returned HTTP ' + response.status);
 
-      fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(formData).toString()
-      })
-      .then(response => {
-        if (response.ok) {
-          status.textContent = 'Message sent successfully!';
-          status.style.color = '#80c99f';
-          form.reset();
-        } else {
-          throw new Error('Form submission failed');
-        }
-      })
-      .catch(error => {
-        console.error('Netlify Form Error:', error);
-        status.textContent = 'Failed to send message. Please try again.';
+        status.textContent = 'Thanks! Your message has been submitted.';
+        status.style.color = '#80c99f';
+        form.reset();
+      } catch (error) {
+        console.error('Contact form submission failed:', error);
+        status.textContent = 'Could not send your message. Please try again or email sathvidhu@gmail.com directly.';
         status.style.color = '#bd818a';
-      });
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.removeAttribute('aria-busy');
+          if (originalButtonText) submitButton.innerHTML = originalButtonText;
+        }
+      }
     });
   }
 })();
