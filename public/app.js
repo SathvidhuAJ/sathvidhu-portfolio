@@ -526,7 +526,7 @@
       const values = Object.fromEntries(formData.entries());
       const rules = {
         name: ['Please enter your name.', v => v.trim().length >= 2],
-        email: ['Please enter a valid email.', v => /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(v)],
+        email: ['Please enter a valid email.', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())],
         subject: ['Please add a subject.', v => v.trim().length >= 3],
         message: ['Please write a short message.', v => v.trim().length >= 10]
       };
