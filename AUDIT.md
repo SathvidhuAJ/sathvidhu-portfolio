@@ -48,3 +48,5 @@ Screenshots are generated locally under audit/ and ignored by Git. Run tests wit
 ## Deployment
 
 The existing origin is Sathvidhu/sathvidhu-portfolio, main branch. Live URL: https://aj-sath.netlify.app/ . See the final task report for the actual push/deployment and live submission result. Account-side email notification setup remains required unless independently confirmed in Netlify.
+
+Deployment verified: commit d50c9b9 was pushed to existing main; production homepage, app.js, projects.js, About page, CSS and logo returned HTTP 200. New validation/project markers were found in production responses. Live test submission was not sent: automatic approval review rejected sending the contact payload to production without exact-payload approval. Stored submissions and email receipt remain unverified.
