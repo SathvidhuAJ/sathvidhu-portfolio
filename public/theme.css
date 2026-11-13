@@ -17,6 +17,11 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 112px;
+}
+
+section[id] {
+  scroll-margin-top: 112px;
 }
 
 body {

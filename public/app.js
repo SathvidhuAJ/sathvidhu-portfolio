@@ -250,6 +250,20 @@
   window.addEventListener('resize', updateNavIndicator, { passive: true });
   setTimeout(updateNavIndicator, 250);
 
+  const sectionLinks = navLinksList.filter(link => link.hash && document.querySelector(link.hash));
+  // Use native smooth scrolling and close the mobile menu after navigation.
+  sectionLinks.forEach(link => link.addEventListener('click', event => {
+    const target = document.querySelector(link.hash);
+    if (!target) return;
+    event.preventDefault();
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    history.replaceState(null, '', link.hash);
+    $('#navLinks')?.classList.remove('open');
+    $('#menuToggle')?.setAttribute('aria-expanded', 'false');
+  }));
+
+
+
   // Tech Stack Filtering & Rendering
   const techStackContainer = $('#techStack');
   const techFiltersContainer = $('#techFilters');
@@ -299,6 +313,17 @@
   renderTechStack();
 
   // Projects Filtering & Rendering
+  function validProjectUrl(value, github = false) {
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' && !url.username && !url.password &&
+        (!github || (url.hostname === 'github.com' && /^\/Sathvidhu\/[^/]+$/.test(url.pathname)));
+    } catch { return false; }
+  }
+  PROJECTS.forEach(project => {
+    if (!validProjectUrl(project.github, true)) project.github = '';
+    if (!validProjectUrl(project.liveDemo)) project.liveDemo = '';
+  });
   const filters = $('#filters');
   const categories = ['All', ...new Set(PROJECTS.map(p => p.category))];
   let activeFilter = 'All';
@@ -342,14 +367,15 @@
           <div class="tech-tags">${p.technologies.map(t => `<span class="tech-tag">${t}</span>`).join('')}</div>
           <div class="project-actions">
             <button class="mini-btn primary view-project" type="button">View Project ↗</button>
-            ${p.github ? `<a class="mini-btn" href="${p.github}" target="_blank" rel="noreferrer">GitHub ↗</a>` : ''}
-            ${p.liveDemo ? `<a class="mini-btn" href="${p.liveDemo}" target="_blank" rel="noreferrer">Live Demo ↗</a>` : ''}
+            ${p.github ? `<a class="mini-btn" href="${p.github}" target="_blank" rel="noopener noreferrer">GitHub ↗</a>` : ''}
+            ${p.liveDemo ? `<a class="mini-btn" href="${p.liveDemo}" target="_blank" rel="noopener noreferrer">Live Demo ↗</a>` : ''}
           </div>
         </div>
       </article>
     `).join('');
     
     $$('.view-project', track).forEach(button => button.addEventListener('click', e => openModal(Number(e.currentTarget.closest('.project-card').dataset.project))));
+    track.scrollLeft = 0;
     observeReveals(track);
   }
 
@@ -408,12 +434,14 @@
     track.setAttribute('tabindex', '0');
     track.setAttribute('aria-label', 'Projects list. Use left and right arrow keys to scroll through projects.');
     track.addEventListener('keydown', e => {
+      if (e.target !== track) return;
       if (e.key === 'ArrowLeft') { e.preventDefault(); scrollProjects(-1); }
       else if (e.key === 'ArrowRight') { e.preventDefault(); scrollProjects(1); }
     });
 
     let down = false, startX = 0, scrollLeft = 0;
     track.addEventListener('pointerdown', e => { 
+      if (e.pointerType !== 'mouse' || e.button !== 0 || e.target.closest('a, button')) return;
       down = true; 
       track.classList.add('dragging'); 
       startX = e.clientX; 
@@ -436,7 +464,9 @@
   }
 
   const backdrop = $('#modalBackdrop');
+  let modalTrigger;
   function openModal(index) {
+    modalTrigger = document.activeElement;
     const p = PROJECTS[index];
     const catEl = $('#modalCategory');
     if (catEl) catEl.textContent = p.category + ' / ' + p.type;
@@ -448,14 +478,22 @@
     $('#modalTech').innerHTML = p.technologies.map(t => `<span class="tech-tag">${t}</span>`).join('');
     $('#modalVisual').innerHTML = artFor(p).replace('project-art','project-art modal-art');
     const actions = [];
-    if (p.github) actions.push(`<a class="btn btn-ghost" href="${p.github}" target="_blank" rel="noreferrer">GitHub ↗</a>`);
-    if (p.liveDemo) actions.push(`<a class="btn btn-primary" href="${p.liveDemo}" target="_blank" rel="noreferrer">Live Demo ↗</a>`);
+    if (p.github) actions.push(`<a class="btn btn-ghost" href="${p.github}" target="_blank" rel="noopener noreferrer">GitHub ↗</a>`);
+    if (p.liveDemo) actions.push(`<a class="btn btn-primary" href="${p.liveDemo}" target="_blank" rel="noopener noreferrer">Live Demo ↗</a>`);
     $('#modalActions').innerHTML = actions.join('');
     if (backdrop) {
+      backdrop.inert = false;
       backdrop.classList.add('open'); backdrop.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; $('#modalClose').focus();
     }
   }
-  function closeModal(){if(backdrop){backdrop.classList.remove('open');backdrop.setAttribute('aria-hidden','true');document.body.style.overflow='';}}
+  function closeModal(){if(backdrop){modalTrigger?.focus();backdrop.inert = true;backdrop.classList.remove('open');backdrop.setAttribute('aria-hidden','true');document.body.style.overflow='';}}
+  backdrop?.addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;
+    const controls = $$('button, a[href]', backdrop);
+    const first = controls[0], last = controls[controls.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
   const closeBtn = $('#modalClose');
   if (closeBtn) closeBtn.addEventListener('click', closeModal); 
   if (backdrop) backdrop.addEventListener('click', e => { if(e.target===backdrop) closeModal(); }); 
@@ -492,58 +530,66 @@
 
   const form = $('#contactForm'), status = $('#formStatus');
   if (form) {
-    form.addEventListener('submit', e => {
+    let sending = false;
+    const button = $('button[type="submit"]', form);
+    const buttonLabel = button.innerHTML;
+    const fields = ['name', 'email', 'subject', 'message'];
+    function validate(key) {
+      const input = form.elements.namedItem(key);
+      const value = input.value.trim();
+      let error = !value ? `Please enter your ${key}.` : '';
+      if (!error && key === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = 'Please enter a valid email address.';
+      if (!error && value.length > input.maxLength) error = `Please use at most ${input.maxLength} characters.`;
+      input.classList.toggle('invalid', !!error);
+      input.setAttribute('aria-invalid', String(!!error));
+      document.getElementById(key + 'Error').textContent = error;
+      return !error;
+    }
+    fields.forEach(key => form.elements.namedItem(key).addEventListener('input', () => {
+      if (form.elements.namedItem(key).getAttribute('aria-invalid') === 'true') validate(key);
+      if (!sending) status.textContent = '';
+    }));
+    form.addEventListener('submit', async e => {
       e.preventDefault();
-      let valid = true;
-      const values = Object.fromEntries(new FormData(form));
-      const rules = {
-        name: ['Please enter your name.', v => v.trim().length >= 2],
-        email: ['Please enter a valid email.', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)],
-        subject: ['Please add a subject.', v => v.trim().length >= 3],
-        message: ['Please write a short message.', v => v.trim().length >= 10]
-      };
-      Object.entries(rules).forEach(([key, [msg, check]]) => {
-        const input = form.elements[key];
-        const small = $('small', input.parentElement);
-        const bad = !check(values[key] || '');
-        input.classList.toggle('invalid', bad);
-        small.textContent = bad ? msg : '';
-        if (bad) valid = false;
-      });
-
-      if (!valid) {
+      if (sending) return;
+      const invalid = fields.filter(key => !validate(key));
+      if (invalid.length) {
         status.textContent = 'Please check the highlighted fields.';
-        status.style.color = '#bd818a';
+        status.style.color = '#e8a5af';
+        form.elements.namedItem(invalid[0]).focus();
         return;
       }
-
-      status.textContent = 'Sending...';
+      if (form.elements.namedItem('bot-field')?.value.trim()) return;
+      sending = true;
+      button.disabled = true;
+      button.textContent = 'Sending…';
+      form.setAttribute('aria-busy', 'true');
+      status.textContent = 'Sending your message…';
       status.style.color = '#80c99f';
-
-      const formData = new FormData(form);
-      if (!formData.get('form-name')) {
-        formData.append('form-name', 'contact');
+      const data = new URLSearchParams(new FormData(form));
+      fields.forEach(key => data.set(key, data.get(key).trim()));
+      data.set('form-name', 'contact');
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: data.toString(),
+          signal: AbortSignal.timeout(20000)
+        });
+        if (!response.ok) throw new Error('Submission failed');
+        status.textContent = 'Thank you! Your message has been submitted.';
+        form.reset();
+      } catch (error) {
+        status.style.color = '#e8a5af';
+        status.textContent = error.name === 'TimeoutError'
+          ? 'The request timed out. Your message may have arrived. Please email sathvidhu@gmail.com before retrying.'
+          : 'Your submission could not be confirmed. Please try again or email sathvidhu@gmail.com.';
+      } finally {
+        sending = false;
+        button.disabled = false;
+        button.innerHTML = buttonLabel;
+        form.removeAttribute('aria-busy');
       }
-
-      fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(formData).toString()
-      })
-      .then(response => {
-        if (response.ok) {
-          status.textContent = 'Message sent successfully!';
-          status.style.color = '#80c99f';
-          form.reset();
-        } else {
-          throw new Error('Form submission failed');
-        }
-      })
-      .catch(error => {
-        console.error('Netlify Form Error:', error);
-        status.textContent = 'Failed to send message. Please try again.';
-        status.style.color = '#bd818a';
-      });
     });
   }
 })();

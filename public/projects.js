@@ -1,9 +1,134 @@
 const PROJECTS = [
-  {name:'SeatTreat',category:'Full Stack',type:'Cinema / Business System',description:'A mobile-first cinema food ordering platform designed for in-seat ordering using QR-based seat verification.',image:'seattreat',technologies:['HTML','CSS','JavaScript','Node.js','PostgreSQL','Docker','JSON'],github:'https://github.com/Sathvidhu/SeatTreat',liveDemo:'',featured:true,problem:'Cinema food ordering can interrupt the movie experience and create friction around identifying the correct seat.',solution:'A QR-first customer flow connects the guest, seat and order while staff and admin dashboards support the operational side.',features:['QR seat verification','Food & menu browsing','Cart and checkout','Payment method selection','Order confirmation','Staff dashboard','Admin dashboard','PostgreSQL database','Dockerized deployment']},
-  {name:'Walleto',category:'Web',type:'Personal Finance',description:'A web-based personal finance management system for tracking income, expenses, fuel costs, monthly spending and wishlist items.',image:'walleto',technologies:['HTML','CSS','JavaScript','Bootstrap','PHP','MySQL','Docker'],github:'',liveDemo:'',featured:true,problem:'Personal spending data becomes difficult to understand when income, recurring expenses and smaller categories live in separate places.',solution:'A focused dashboard organizes personal finance records into one simple web application with structured MySQL storage.',features:['Income tracking','Expense management','Fuel cost tracking','Monthly expense views','Wishlist management','PHP backend','MySQL database','Docker support']},
-  {name:'RJ Ladies Fashion',category:'Full Stack',type:'E-commerce',description:'An e-commerce platform with product management, categories, variants, product images, admin controls and cloud-based image storage.',image:'rj',technologies:['HTML','CSS','JavaScript','Flask','Python','Supabase','Cloudinary','JSON'],github:'',liveDemo:'',featured:true,problem:'Managing products, variants and media becomes complex when storefront content and administration are disconnected.',solution:'A connected commerce workflow combines product operations, structured data and cloud image storage into one maintainable platform.',features:['Product management','Categories','Product variants','Product image management','Admin controls','Supabase data layer','Cloudinary image storage']},
-  {name:'DriveFlow CRM',category:'Business Systems',type:'Automotive CRM',description:'A CRM and business management system designed around automotive sales and customer management workflows.',image:'driveflow',technologies:['HTML','CSS','JavaScript','Node.js','Database'],github:'',liveDemo:'',featured:true,problem:'Sales teams need a clear way to manage customer information and follow business workflows without scattered records.',solution:'A structured CRM experience brings customer and sales workflow information into an organized business system.',features:['Customer management','Sales workflow','Business records','Responsive interface','Backend integration','Structured database']},
-  {name:'Smart Study Planner',category:'Web',type:'Productivity',description:'A productivity platform for students to organize subjects, tasks, schedules and study progress.',image:'study',technologies:['HTML','CSS','JavaScript','React','Firebase / Supabase','JSON'],github:'',liveDemo:'',featured:false,problem:'Study plans often become fragmented across notes, calendars and task lists.',solution:'A focused planner brings subjects, tasks, schedules and progress into a single visual workflow.',features:['Subject organization','Task planning','Schedules','Study progress','Responsive UI','Cloud-ready data model']}
+  {
+    "name": "Smart Study Planner",
+    "category": "Full Stack",
+    "type": "Education / Development Project",
+    "description": "A PHP study platform with weekly timetables, learning resources and chapter-based mock tests. Some modules require database and schema alignment.",
+    "image": "study",
+    "technologies": [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "PHP",
+      "MySQL",
+      "Bootstrap"
+    ],
+    "problem": "Students need a central place to organize study routines and access course material.",
+    "solution": "Student and administrator pages connect schedules, resources and mock tests through PHP and MySQL.",
+    "features": [
+      "Weekly timetable generation",
+      "Student accounts and profiles",
+      "Video and PDF resource pages",
+      "Chapter-based mock tests",
+      "Administrator resource management"
+    ],
+    "github": "https://github.com/Sathvidhu/Mini-Project",
+    "liveDemo": "",
+    "featured": true
+  },
+  {
+    "name": "Invoice App",
+    "category": "Business Systems",
+    "type": "Invoice Management",
+    "description": "A PHP and MySQL application for managing clients, itemized invoices, tax, payment status and printable invoice views.",
+    "image": "driveflow",
+    "technologies": [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "PHP",
+      "MySQL",
+      "Docker"
+    ],
+    "problem": "Client details and invoice records need to stay organized together.",
+    "solution": "A database-backed dashboard connects clients, invoice line items and payment status.",
+    "features": [
+      "Client management",
+      "Itemized invoices and tax",
+      "Draft, unpaid and paid statuses",
+      "Invoice editing",
+      "Print-friendly invoice views",
+      "Docker Compose setup"
+    ],
+    "github": "https://github.com/Sathvidhu/invoice-app",
+    "liveDemo": "",
+    "featured": true
+  },
+  {
+    "name": "Todo App",
+    "category": "Full Stack",
+    "type": "Task Management",
+    "description": "A persistent task manager with priorities, due dates, completion tracking and task filters, backed by a PHP API and MySQL.",
+    "image": "walleto",
+    "technologies": [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "PHP",
+      "MySQL",
+      "Docker"
+    ],
+    "problem": "Tasks need persistent storage and clear prioritization.",
+    "solution": "A JavaScript interface uses a PHP API to store and update tasks in MySQL.",
+    "features": [
+      "Task creation and inline editing",
+      "Priority and due dates",
+      "Completion tracking",
+      "Active and overdue filters",
+      "Task statistics",
+      "Recurring task fields"
+    ],
+    "github": "https://github.com/Sathvidhu/todo-app",
+    "liveDemo": "",
+    "featured": true
+  },
+  {
+    "name": "Local Python Chatbot",
+    "category": "Python",
+    "type": "AI / Learning Experiment",
+    "description": "A command-line experiment using Hugging Face Transformers and DistilGPT-2 for local text generation after the model download.",
+    "image": "chatbot",
+    "technologies": [
+      "Python",
+      "Hugging Face Transformers",
+      "DistilGPT-2"
+    ],
+    "problem": "Exploring how to run a text-generation model from a Python program.",
+    "solution": "A command-line loop sends input to a local Transformers pipeline. This is a learning experiment with limited conversational quality.",
+    "features": [
+      "Interactive command-line loop",
+      "Local model inference",
+      "Configurable sampling settings",
+      "Quit, exit and bye commands"
+    ],
+    "github": "https://github.com/Sathvidhu/Chatbot",
+    "liveDemo": "",
+    "featured": true
+  },
+  {
+    "name": "Personal Website",
+    "category": "Web",
+    "type": "Early Portfolio",
+    "description": "An early personal landing page built with HTML, CSS and JavaScript, featuring a responsive navigation menu, social links and particle effects.",
+    "image": "website",
+    "technologies": [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "Particles.js"
+    ],
+    "problem": "Creating a personal introduction and a central place for social profile links.",
+    "solution": "A static landing page combines a personal introduction, profile image and interactive particle background.",
+    "features": [
+      "Personal introduction",
+      "Social profile links",
+      "Responsive navigation",
+      "Interactive particle background"
+    ],
+    "github": "https://github.com/Sathvidhu/Website",
+    "liveDemo": "",
+    "featured": true
+  }
 ];
 
 const TECH_STACK = [
