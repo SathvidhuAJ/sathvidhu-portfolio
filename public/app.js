@@ -256,7 +256,7 @@
     const target = document.querySelector(link.hash);
     if (!target) return;
     event.preventDefault();
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    target.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
     history.replaceState(null, '', link.hash);
     $('#navLinks')?.classList.remove('open');
     $('#menuToggle')?.setAttribute('aria-expanded', 'false');
@@ -408,7 +408,7 @@
       entries.forEach(entry => {
         if (entry.isIntersecting && !discoveryDone) {
           discoveryDone = true;
-          if (track.scrollLeft === 0) {
+          if (track.scrollLeft === 0 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             track.classList.add('discovery-nudge');
             setTimeout(() => { track.classList.remove('discovery-nudge'); }, 1000);
           }
@@ -424,7 +424,7 @@
     if (!track) return;
     const card = track.querySelector('.project-card');
     const cardWidth = card ? card.offsetWidth + 15 : 350;
-    track.scrollBy({ left: direction * cardWidth, behavior: 'smooth' });
+    track.scrollBy({ left: direction * cardWidth, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
   }
 
   if (prevProjectBtn) prevProjectBtn.addEventListener('click', () => scrollProjects(-1));
@@ -477,16 +477,38 @@
     $('#modalFeatures').innerHTML = p.features.map(f => `<li>${f}</li>`).join('');
     $('#modalTech').innerHTML = p.technologies.map(t => `<span class="tech-tag">${t}</span>`).join('');
     $('#modalVisual').innerHTML = artFor(p).replace('project-art','project-art modal-art');
+    const caseStudy = $('#modalCaseStudy');
+    caseStudy.replaceChildren();
+    // Optional sections use textContent; repository content never becomes HTML.
+    for (const [key, title] of [['workflow','How it works'], ['architecture','Architecture'], ['setup','Local setup'], ['limitations','Project notes']]) {
+      if (!p[key]?.length) continue;
+      const section = document.createElement('section');
+      section.className = 'case-study-section';
+      const heading = document.createElement('h4');
+      heading.textContent = title;
+      const list = document.createElement(key === 'setup' ? 'ol' : 'ul');
+      p[key].forEach(text => {
+        const item = document.createElement('li');
+        item.textContent = text;
+        list.appendChild(item);
+      });
+      section.append(heading, list);
+      caseStudy.appendChild(section);
+    }
     const actions = [];
     if (p.github) actions.push(`<a class="btn btn-ghost" href="${p.github}" target="_blank" rel="noopener noreferrer">GitHub ↗</a>`);
     if (p.liveDemo) actions.push(`<a class="btn btn-primary" href="${p.liveDemo}" target="_blank" rel="noopener noreferrer">Live Demo ↗</a>`);
     $('#modalActions').innerHTML = actions.join('');
     if (backdrop) {
       backdrop.inert = false;
-      backdrop.classList.add('open'); backdrop.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; $('#modalClose').focus();
+      backdrop.classList.add('open'); backdrop.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
+      // Wait for the visibility transition before moving keyboard focus.
+      Promise.all(backdrop.getAnimations().map(animation => animation.finished.catch(() => {}))).then(() => {
+        if (backdrop.classList.contains('open')) $('#modalClose').focus();
+      });
     }
   }
-  function closeModal(){if(backdrop){modalTrigger?.focus();backdrop.inert = true;backdrop.classList.remove('open');backdrop.setAttribute('aria-hidden','true');document.body.style.overflow='';}}
+  function closeModal(){if(backdrop?.classList.contains('open')){modalTrigger?.focus();backdrop.inert = true;backdrop.classList.remove('open');backdrop.setAttribute('aria-hidden','true');document.body.style.overflow='';}}
   backdrop?.addEventListener('keydown', e => {
     if (e.key !== 'Tab') return;
     const controls = $$('button, a[href]', backdrop);
@@ -531,6 +553,8 @@
   const form = $('#contactForm'), status = $('#formStatus');
   if (form) {
     let sending = false;
+    let submissionKey, submissionFingerprint;
+    const usesEmailApi = form.dataset.contactProvider === 'resend';
     const button = $('button[type="submit"]', form);
     const buttonLabel = button.innerHTML;
     const fields = ['name', 'email', 'subject', 'message'];
@@ -538,7 +562,12 @@
       const input = form.elements.namedItem(key);
       const value = input.value.trim();
       let error = !value ? `Please enter your ${key}.` : '';
-      if (!error && key === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = 'Please enter a valid email address.';
+      if (!error && key === 'email' && !/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)+$/.test(value)) error = 'Please enter a valid email address.';
+      if (!error && key === 'email') {
+        const localPart = value.split('@')[0];
+        if (localPart.length > 64 || localPart.startsWith('.') || localPart.endsWith('.') || localPart.includes('..')) error = 'Please enter a valid email address.';
+      }
+      if (!error && (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (key !== 'message' && /[\r\n]/.test(value)))) error = `Please check your ${key}.`;
       if (!error && value.length > input.maxLength) error = `Please use at most ${input.maxLength} characters.`;
       input.classList.toggle('invalid', !!error);
       input.setAttribute('aria-invalid', String(!!error));
@@ -570,18 +599,40 @@
       fields.forEach(key => data.set(key, data.get(key).trim()));
       data.set('form-name', 'contact');
       try {
+        const payload = Object.fromEntries([...data].filter(([key]) => key !== 'form-name'));
+        const fingerprint = JSON.stringify(payload);
+        if (usesEmailApi && fingerprint !== submissionFingerprint) {
+          submissionKey = crypto.randomUUID();
+          submissionFingerprint = fingerprint;
+        }
         const response = await fetch(form.action, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: data.toString(),
+          headers: usesEmailApi
+            ? { 'Content-Type': 'application/json', 'Idempotency-Key': submissionKey }
+            : { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: usesEmailApi ? JSON.stringify(payload) : data.toString(),
           signal: AbortSignal.timeout(20000)
         });
-        if (!response.ok) throw new Error('Submission failed');
-        status.textContent = 'Thank you! Your message has been submitted.';
+        const result = usesEmailApi ? await response.json().catch(() => null) : null;
+        if (!response.ok || (usesEmailApi && result?.ok !== true)) {
+          const failure = new Error('Submission failed');
+          failure.httpStatus = response.status;
+          throw failure;
+        }
+        status.textContent = usesEmailApi ? 'Thank you! Your message was accepted for delivery.' : 'Thank you! Your message has been submitted.';
         form.reset();
+        submissionKey = submissionFingerprint = undefined;
       } catch (error) {
         status.style.color = '#e8a5af';
-        status.textContent = error.name === 'TimeoutError'
+        status.textContent = error.httpStatus === 503
+          ? 'Contact email is currently unavailable. Please email sathvidhu@gmail.com.'
+          : error.httpStatus === 429
+          ? 'Too many attempts. Please try later or email sathvidhu@gmail.com.'
+          : error.httpStatus === 400
+          ? 'Please check your message details and try again.'
+          : error.httpStatus === 403
+          ? 'Messages cannot be submitted from this address. Please email sathvidhu@gmail.com.'
+          : error.name === 'TimeoutError' || error.httpStatus === 504
           ? 'The request timed out. Your message may have arrived. Please email sathvidhu@gmail.com before retrying.'
           : 'Your submission could not be confirmed. Please try again or email sathvidhu@gmail.com.';
       } finally {

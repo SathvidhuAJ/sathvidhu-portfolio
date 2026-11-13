@@ -24,7 +24,26 @@ const PROJECTS = [
     ],
     "github": "https://github.com/Sathvidhu/Mini-Project",
     "liveDemo": "",
-    "featured": true
+    "featured": true,
+    "workflow": [
+      "Students register and sign in to a PHP session, then access learning resources through their dashboard.",
+      "Subject difficulty rankings feed a Monday-to-Sunday timetable saved per student and week.",
+      "Chapter tests load questions and options from the database, store answers and show results."
+    ],
+    "architecture": [
+      "Page-oriented PHP application with student/ and admin/ areas, MySQLi queries and PHP sessions.",
+      "Videos use the YouTube IFrame API; PDF and question-paper pages depend on database content."
+    ],
+    "setup": [
+      "Use PHP 8.1+ with MySQLi and a local MySQL or MariaDB server.",
+      "Import the available SQL exports under db/ into a disposable development database.",
+      "Review duplicated connection settings and missing module tables before testing individual workflows.",
+      "Serve the repository with php -S 127.0.0.1:8000 and open /student/index.php."
+    ],
+    "limitations": [
+      "Multiple iterations and template files remain in the repository. Database/schema references are not consistent across modules.",
+      "This is a development project: authentication, database queries and session handling require review before a public deployment."
+    ]
   },
   {
     "name": "Invoice App",
@@ -52,7 +71,21 @@ const PROJECTS = [
     ],
     "github": "https://github.com/Sathvidhu/invoice-app",
     "liveDemo": "",
-    "featured": true
+    "featured": true,
+    "workflow": [
+      "Create a client record, then add an invoice with line items, tax, issue date and due date.",
+      "Edit invoice details and track draft, unpaid or paid status from the dashboard.",
+      "Open the invoice view to print, or use the browser print dialog to save a PDF."
+    ],
+    "architecture": [
+      "PHP pages render the dashboard, client management and invoice editor. JavaScript calls PHP endpoints in api/.",
+      "MySQL separates clients, invoices and invoice_items; Docker Compose supplies the local application/database environment."
+    ],
+    "setup": [
+      "Clone the repository and run docker compose up -d --build from its root.",
+      "Open the app at http://localhost:8080; the README lists phpMyAdmin at http://localhost:8081.",
+      "The provided setup.sql supplies schema and seed data during Docker database initialization."
+    ]
   },
   {
     "name": "Todo App",
@@ -80,7 +113,24 @@ const PROJECTS = [
     ],
     "github": "https://github.com/Sathvidhu/todo-app",
     "liveDemo": "",
-    "featured": true
+    "featured": true,
+    "workflow": [
+      "Add a task with a priority and optional due date.",
+      "Edit, complete or delete tasks, and filter by active, completed, high-priority or overdue work.",
+      "The interface fetches task lists and statistics from a PHP API so records persist across refreshes."
+    ],
+    "architecture": [
+      "HTML/CSS and JavaScript interface backed by api/tasks.php with GET, POST, PUT and DELETE operations.",
+      "PHP uses MySQLi for persistent MySQL storage; the inspected API also handles recurrence frequency and end-date fields."
+    ],
+    "setup": [
+      "Use PHP 8.0+ with MySQLi and MySQL 5.7+ or a compatible MariaDB server.",
+      "Import setup.sql and update config.php for a local development database.",
+      "Place the files under your PHP server web root and open /todo-app/."
+    ],
+    "limitations": [
+      "The API includes recurring-task fields beyond the schema shown in the README. Check the checked-in setup.sql against the API before setting up a database."
+    ]
   },
   {
     "name": "Local Python Chatbot",
@@ -103,7 +153,25 @@ const PROJECTS = [
     ],
     "github": "https://github.com/Sathvidhu/Chatbot",
     "liveDemo": "",
-    "featured": true
+    "featured": true,
+    "workflow": [
+      "The Python script initializes a Hugging Face text-generation pipeline using distilgpt2.",
+      "A command-line loop reads input and generates up to 150 new tokens using sampling.",
+      "Enter quit, exit or bye to end the session."
+    ],
+    "architecture": [
+      "Single-file Python CLI: main.py defines the generation helper and interactive conversation loop.",
+      "The first run downloads model files; later runs can use the local model cache."
+    ],
+    "setup": [
+      "Create and activate a Python virtual environment.",
+      "Install the required libraries with pip install transformers torch.",
+      "Run python main.py and enter a prompt at the command line."
+    ],
+    "limitations": [
+      "DistilGPT-2 is a general text-generation model, not a dialogue-tuned assistant. Output can repeat or be incomplete or incorrect.",
+      "The README lists conversation history and graceful model-loading errors as future improvements, not implemented features."
+    ]
   },
   {
     "name": "Personal Website",
@@ -127,7 +195,24 @@ const PROJECTS = [
     ],
     "github": "https://github.com/Sathvidhu/Website",
     "liveDemo": "",
-    "featured": true
+    "featured": true,
+    "workflow": [
+      "The static index.html presents a personal introduction, profile image and social profile links.",
+      "A checkbox-based navigation menu adapts the page for smaller screens.",
+      "app.js configures the Particles.js background with pointer repulsion and click-created particles."
+    ],
+    "architecture": [
+      "Static HTML and CSS with JavaScript for particle configuration; no application backend is present in the inspected entry files.",
+      "The page references local assets and external icon styles."
+    ],
+    "setup": [
+      "Clone the repository and serve its root with a local static HTTP server.",
+      "Open index.html through the local server; external icon resources require network access."
+    ],
+    "limitations": [
+      "The README contains only a project heading. This summary is based on index.html and app.js.",
+      "The inspected entry page references additional scripts; their integration has not been runtime-tested as part of this portfolio audit."
+    ]
   }
 ];
 

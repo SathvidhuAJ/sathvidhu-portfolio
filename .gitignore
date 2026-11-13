@@ -2,3 +2,12 @@ audit/*.png
 audit/live-*.html
 __pycache__/
 debug.log
+.env
+.env.*
+!.env.example
+dist/
+.vercel/
+node_modules/
+# Per-run verification output and local diagnostics (keep test source).
+audit/*-results.json
+*.log

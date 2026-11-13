@@ -1,5 +1,7 @@
 # Sathvidhu A J — Developer Portfolio
 
+Local Vercel preparation is documented in [VERCEL-SETUP.md](VERCEL-SETUP.md); implementation and test results are in [UPGRADE-REPORT.md](UPGRADE-REPORT.md). Run `npm run dev` for a safe Vercel-style preview at http://127.0.0.1:8766/ with real email sending disabled. The existing Netlify source path remains `public/`.
+
 Personal portfolio website of **Sathvidhu A J**, a BCA student and aspiring Frontend Developer. The site introduces my developer journey, highlights selected projects and technologies, and provides ways to connect with me.
 
 🌐 **Live portfolio:** https://aj-sath.netlify.app/

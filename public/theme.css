@@ -16,6 +16,7 @@
 }
 
 html {
+  overflow-x: clip;
   scroll-behavior: smooth;
   scroll-padding-top: 112px;
 }
@@ -1335,6 +1336,10 @@ a.social-icon-card:hover {
 }
 
 /* Modal */
+.case-study-section { margin-top: 28px; }
+.case-study-section h4 { color: var(--text); font-size: 16px; margin-bottom: 12px; }
+.case-study-section ol { padding-left: 20px; color: var(--muted); line-height: 1.85; }
+.case-study-section li { overflow-wrap: anywhere; }
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1372,7 +1377,9 @@ a.social-icon-card:hover {
 }
 
 .modal-close {
-  position: absolute;
+  position: sticky;
+  float: right;
+  margin: 16px;
   right: 16px;
   top: 16px;
   width: 36px;
