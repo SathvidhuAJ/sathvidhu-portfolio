@@ -251,12 +251,14 @@
           <label>Subject<input name="subject" required maxlength="200" aria-describedby="subjectError" type="text" placeholder="Project / opportunity"><small id="subjectError"></small></label>
           <label>Message<textarea name="message" required maxlength="5000" aria-describedby="messageError" rows="6" placeholder="Tell me a little about what you're building..."></textarea><small id="messageError"></small></label>
           <button class="btn compose-button submit-btn" id="gmailCompose" type="submit" disabled>Open in Gmail</button>
+          <button id="draftHelp" class="draft-help" type="button" hidden>Draft options</button>
           <details id="draftDetails" hidden>
-            <summary>Draft not opening? Retry or copy</summary>
+            <summary>Draft options</summary>
             <a id="gmailDraftLink" target="_blank" rel="noopener noreferrer" hidden>Open Gmail draft</a>
             <label for="manualDraft">Complete draft<textarea id="manualDraft" readonly rows="12"></textarea></label>
           </details>
           <div class="form-status" id="formStatus" role="status"></div>
+          <div id="gmailNotice" class="gmail-notice" role="status" aria-live="polite" aria-atomic="true"></div>
         </form>
       </div>
     </section>

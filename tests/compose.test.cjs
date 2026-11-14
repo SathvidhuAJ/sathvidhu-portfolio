@@ -42,3 +42,25 @@ test('Gmail is the sole form action; direct email and compact fallback remain',(
  assert.ok(html.includes('Review your draft in Gmail and press Send.'));
  assert.ok(options.includes('id="gmailDraftLink"'));assert.ok(options.includes('id="manualDraft"'));
 });
+for(const mode of ['success','blocked','open-error','navigation-error']) test('Gmail handoff '+mode,()=>{
+ const {launchGmail}=require('../public/app.js');
+ const url=prepare(normal).gmail;
+ let closed=false, policy, detached=false, destination;
+ const popup={opener:{},document:{createElement(tag){return tag==='a'?{click(){
+  detached=popup.opener===null;
+  if(mode==='navigation-error') throw new Error('Cannot navigate');
+  assert.equal(this.referrerPolicy,'no-referrer');assert.equal(this.rel,'noopener noreferrer');
+  destination=this.href;
+ }}:{};},head:{appendChild(meta){policy=meta;}},body:{appendChild(){}}},close(){closed=true;}};
+ const result=launchGmail(url,(target,name)=>{
+  assert.equal(target,'about:blank');assert.equal(name,'_blank');
+  if(mode==='open-error')throw new Error('Cannot open');
+  return mode==='blocked'?null:popup;
+ });
+ assert.equal(result,mode==='success');
+ if(mode==='success'){
+  assert.equal(destination,url);assert.equal(detached,true);
+  assert.deepEqual(policy,{name:'referrer',content:'no-referrer'});
+ }
+ if(mode==='navigation-error')assert.equal(closed,true);
+});

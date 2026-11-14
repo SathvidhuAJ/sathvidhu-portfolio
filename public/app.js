@@ -25,7 +25,29 @@ const ContactDraft = (() => {
       manual: `To: ${recipient}\nSubject: ${values.subject}\n\n${body}`
     };
   }
-  return { prepare, recipient, maxMailto: 1800, maxGmail: 8000 };
+  function launchGmail(url, openWindow) {
+    let popup;
+    try {
+      // A blank tab gives us a handle to distinguish blocked requests. Detach
+      // its opener before navigating and suppress the outgoing referrer.
+      popup = openWindow('about:blank', '_blank');
+      if (!popup) return false;
+      popup.opener = null;
+      const policy = popup.document.createElement('meta');
+      policy.name = 'referrer'; policy.content = 'no-referrer';
+      popup.document.head.appendChild(policy);
+      const link = popup.document.createElement('a');
+      link.href = url; link.target = '_self';
+      link.rel = 'noopener noreferrer'; link.referrerPolicy = 'no-referrer';
+      popup.document.body.appendChild(link);
+      link.click();
+      return true;
+    } catch {
+      try { popup?.close(); } catch { /* Keep the on-page recovery available. */ }
+      return false;
+    }
+  }
+  return { prepare, launchGmail, recipient, maxMailto: 1800, maxGmail: 8000 };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = ContactDraft;
 else (() => {
@@ -615,10 +637,36 @@ else (() => {
     const gmailLink = $('#gmailDraftLink');
     const details = $('#draftDetails');
     const manual = $('#manualDraft');
+    const notice = $('#gmailNotice');
+    const help = $('#draftHelp');
+    let noticeTimer;
+    function dismissNotice() {
+      clearTimeout(noticeTimer);
+      notice.replaceChildren();
+    }
+    function showNotice() {
+      dismissNotice();
+      const icon = document.createElement('span');
+      icon.className = 'gmail-notice-icon'; icon.textContent = '\u2713';
+      icon.setAttribute('aria-hidden', 'true');
+      const copy = document.createElement('div');
+      const title = document.createElement('strong');
+      title.textContent = 'Gmail draft requested!';
+      const instruction = document.createElement('span');
+      instruction.textContent = 'Review your message and press Send in Gmail.';
+      copy.append(title, instruction);
+      notice.append(icon, copy);
+      noticeTimer = setTimeout(dismissNotice, 5000);
+    }
+    help.addEventListener('click', () => {
+      details.hidden = false; details.open = true;
+      $('summary', details).focus();
+    });
     // Submit controls start disabled in HTML so failed/disabled JS never posts data.
     $$('button', form).forEach(button => button.disabled = false);
     function clearDraft() {
       status.textContent = '';
+      dismissNotice(); help.hidden = true;
       gmailLink.hidden = true; gmailLink.removeAttribute('href');
       details.hidden = true; details.open = false; manual.value = '';
     }
@@ -639,7 +687,6 @@ else (() => {
         return;
       }
       manual.value = draft.manual;
-      details.hidden = false;
       return draft;
     }
     fields.forEach(key => form.elements.namedItem(key).addEventListener('input', () => {
@@ -659,15 +706,17 @@ else (() => {
       if (!draft) return;
       if (draft.gmail.length > ContactDraft.maxGmail) {
         status.textContent = 'Draft too long for a Gmail link. Copy the complete draft below.';
-        details.open = true;
+        details.hidden = false; details.open = true;
         return;
       }
       gmailLink.href = draft.gmail; gmailLink.hidden = false;
-      status.textContent = 'Review the draft and press Send. Gmail sign-in may be required.';
-      // With noopener, browsers may return null even when opening succeeds.
-      // Keep retry links in collapsed options rather than claiming popup success.
-      try { window.open(draft.gmail, '_blank', 'noopener,noreferrer'); }
-      catch { details.open = true; status.textContent = 'Could not open Gmail. Retry or copy the draft below.'; }
+      if (ContactDraft.launchGmail(draft.gmail, (...args) => window.open(...args))) {
+        help.hidden = false;
+        showNotice();
+      } else {
+        details.hidden = false; details.open = true;
+        status.textContent = 'Gmail could not open. Use the draft link or copy your message below.';
+      }
     });
 
   }
