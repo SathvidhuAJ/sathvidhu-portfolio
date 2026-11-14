@@ -15,7 +15,7 @@ The project includes:
 - Dedicated About page at [`/about.html`](https://sathvidhu-portfolio.vercel.app/about.html)
 - Technology stack and selected project sections
 - Project detail modal and category filtering
-- Vercel contact API with Resend delivery and distributed Redis rate limiting; Netlify Forms remains legacy-only
+- Free Gmail Compose drafts, with a direct email address for other email clients
 - Search metadata, canonical URLs and social-sharing metadata
 - Person/ProfilePage structured data and an XML sitemap
 
@@ -24,7 +24,7 @@ The project includes:
 - **Structure:** HTML5
 - **Styling:** CSS3
 - **Interactions:** Vanilla JavaScript
-- **Hosting / form handling:** Vercel / Node.js contact API (Netlify is legacy/secondary)
+- **Hosting / contact:** Vercel / client-side Gmail Compose (Netlify is legacy/secondary)
 - **Version control:** Git and GitHub
 
 ## Repository structure
@@ -60,11 +60,13 @@ The local Vercel-style preview runs at http://127.0.0.1:8766/ and deliberately d
 
 Vercel is primary at the approved URL https://sathvidhu-portfolio.vercel.app/. It builds `dist/` using `node scripts/build-vercel.cjs`; `api/contact.js` remains a separate serverless function. See [VERCEL-SETUP.md](VERCEL-SETUP.md) for account configuration and separately authorized production verification.
 
-Production contact requires `CONTACT_ENABLED`, `RESEND_API_KEY`, `CONTACT_FROM_EMAIL`, `CONTACT_ALLOWED_ORIGINS`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` and `CONTACT_RATE_LIMIT_SALT`. Credentials belong only in hosting environment settings. The sender needs a verified sending domain. Missing or disabled configuration returns 503; the local preview never sends email. Local mocked tests establish behavior, not provider acceptance or inbox delivery.
+Contact creates a draft addressed to sathvidhu@gmail.com. **Open in Gmail** is the sole form action and opens Google's Gmail compose service with the draft contents; sign-in may be required. Visitors who do not use Gmail can select the visible email-address link. Opening a draft does not send email: the visitor must review the draft and press Send. Form values stay intact. No backend credentials, OAuth, provider account or paid service are required for this workflow, and the frontend never calls `/api/contact` or Netlify Forms.
 
-Netlify is legacy/secondary and still publishes `public/` with Netlify Forms. Netlify notification configuration is independent of the Vercel API. No legacy redirects or shared noindex directives have been applied. A connected-branch push can trigger hosting builds and requires separate approval.
+If a Gmail tab is blocked, expand the draft options to retry or copy the complete plain-text draft manually. The direct email-address link depends on a configured email client. Conservative URL-length limits prevent oversized handoffs without truncating content. Draft contents are not stored in localStorage or sent to this site's server; choosing Gmail shares the draft with Google through its compose URL. Without JavaScript, use the direct email address; draft buttons are disabled.
 
-Local validation covers Node tests, production output and Chromium interactions, including disabled JavaScript and SEO. It does not verify the deployed hostname, Vercel packaging, Redis concurrency or email delivery. Without JavaScript, project summaries and content remain readable; the mobile menu requires JavaScript. Reveal effects time out after four seconds to avoid permanently hidden content.
+The legacy API and tests remain for a separately approved future cleanup. Production `CONTACT_ENABLED` must remain `false`; this local change neither inspects nor changes that setting. Its presence does not mean production sending is enabled or verified. Netlify remains legacy/secondary and publishes `public/`, now with the same compose workflow. No legacy redirects or shared noindex directives have been applied. A connected-branch push can trigger hosting builds and requires separate approval.
+
+Local validation covers Node tests, production output and Chromium interactions, including disabled JavaScript and SEO. It does not verify the deployed hostname, Vercel packaging, legacy API integration or email delivery. Without JavaScript, project summaries and content remain readable; the mobile menu requires JavaScript. Reveal effects time out after four seconds to avoid permanently hidden content.
 
 ## Search visibility
 

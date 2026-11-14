@@ -243,14 +243,19 @@
           </div>
         </div>
 
-        <form class="contact-form" id="contactForm" name="contact" method="POST" data-contact-provider="netlify" data-netlify="true" action="/" data-netlify-honeypot="bot-field" novalidate>
-          <input type="hidden" name="form-name" value="contact">
-          <p hidden aria-hidden="true"><label>Leave this field empty: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+        <form class="contact-form" id="contactForm" data-contact-provider="compose" novalidate aria-describedby="composeHelp">
+          <p id="composeHelp" class="compose-help">Review your draft in Gmail and press Send.</p>
+          <noscript><p>Draft buttons require JavaScript. Email <a href="mailto:sathvidhu@gmail.com">sathvidhu@gmail.com</a> directly and include your name, email, subject and message.</p></noscript>
           <label>Name<input name="name" required maxlength="100" aria-describedby="nameError" type="text" autocomplete="name" placeholder="Your name"><small id="nameError"></small></label>
           <label>Email<input name="email" required maxlength="254" aria-describedby="emailError" type="email" autocomplete="email" placeholder="you@example.com"><small id="emailError"></small></label>
           <label>Subject<input name="subject" required maxlength="200" aria-describedby="subjectError" type="text" placeholder="Project / opportunity"><small id="subjectError"></small></label>
           <label>Message<textarea name="message" required maxlength="5000" aria-describedby="messageError" rows="6" placeholder="Tell me a little about what you're building..."></textarea><small id="messageError"></small></label>
-          <button class="btn btn-primary submit-btn" type="submit">Send Message <span>↗</span></button>
+          <button class="btn compose-button submit-btn" id="gmailCompose" type="submit" disabled>Open in Gmail</button>
+          <details id="draftDetails" hidden>
+            <summary>Draft not opening? Retry or copy</summary>
+            <a id="gmailDraftLink" target="_blank" rel="noopener noreferrer" hidden>Open Gmail draft</a>
+            <label for="manualDraft">Complete draft<textarea id="manualDraft" readonly rows="12"></textarea></label>
+          </details>
           <div class="form-status" id="formStatus" role="status"></div>
         </form>
       </div>

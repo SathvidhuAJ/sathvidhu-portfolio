@@ -1673,3 +1673,20 @@ a.social-icon-card:hover {
 .skip-link:focus { transform: none; }
 .project-fallback { padding: 24px; border: 1px solid var(--line); border-radius: var(--radius); }
 .project-fallback a, .about-page-link { text-decoration: underline; text-underline-offset: 4px; }
+
+.compose-help { color: var(--muted); margin: 0; font-size: 13px; }
+.contact-form a { text-decoration: underline; overflow-wrap: anywhere; }
+.contact-form button:disabled { opacity: .6; cursor: not-allowed; }
+#draftDetails summary { cursor: pointer; }
+#manualDraft { margin-top: 10px; }
+
+.contact-form .compose-button {
+  width: 100%; background: #fff; color: #111827; border: 1px solid #fff;
+  border-radius: 14px; padding: 15px 20px; cursor: pointer;
+  transition: background .2s ease, box-shadow .2s ease;
+}
+.contact-form .compose-button:hover:not(:disabled) { background: #f1f5f9; border-color: #f1f5f9; }
+.contact-form .compose-button:focus-visible { outline: 3px solid #6ea8ff; outline-offset: 3px; }
+.contact-form .compose-button:disabled { opacity: 1; background: #fff; color: #4b5563; cursor: not-allowed; }
+.contact-form .form-status { color: var(--muted); }
+#draftDetails a:not([hidden]) { display: block; margin: 10px 0; }

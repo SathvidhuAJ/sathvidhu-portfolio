@@ -19,8 +19,8 @@ with sync_playwright() as p:
     page.on('requestfailed',lambda r:failed_external.append(r.url) if not r.url.startswith(BASE) else None)
     page.on('response',lambda r:failed_local.append((r.status,r.url)) if r.url.startswith(BASE) and r.status>=400 else None)
     page.goto(BASE)
-    assert page.locator('#contactForm').get_attribute('data-contact-provider')=='resend'
-    assert page.locator('#contactForm').get_attribute('action')=='/api/contact'
+    assert page.locator('#contactForm').get_attribute('data-contact-provider')=='compose'
+    assert page.locator('#contactForm').get_attribute('action') is None
     assert page.locator('[name="form-name"]').count()==0
     assert page.locator('.project-card').count()==5
     for path in ['/', '/about.html']:
@@ -86,10 +86,20 @@ with sync_playwright() as p:
             assert fallback_page.locator('.project-card').count()==0
             assert fallback_page.locator('.hero-copy').evaluate('(e)=>getComputedStyle(e).opacity')=='1'
             assert fallback_page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        assert fallback_page.locator('.submit-btn').is_disabled()
+        assert fallback_page.locator('#gmailCompose').is_disabled()
+        fallback_page.locator('[name="name"]').fill('No script inquiry')
+        fallback_page.locator('[name="name"]').press('Enter')
+        fallback_page.wait_for_timeout(100)
+        assert fallback_page.url==BASE+'/'
         if blocked=='disabled':
             fallback_page.set_viewport_size({'width':390,'height':900})
             for path in ['/', '/about.html']:
                 fallback_page.goto(BASE+path)
+                if path=='/':
+                    assert fallback_page.locator('.submit-btn').is_disabled()
+                    assert fallback_page.locator('#gmailCompose').is_disabled()
+                    assert fallback_page.locator('noscript a[href="mailto:sathvidhu@gmail.com"]').is_visible()
                 assert fallback_page.locator('#navLinks').evaluate('(e)=>getComputedStyle(e).visibility')=='hidden'
                 fallback_page.locator('#menuToggle').focus()
                 fallback_page.keyboard.press('Tab')
@@ -154,50 +164,9 @@ with sync_playwright() as p:
     page.locator('#menuToggle').click()
     page.locator('.nav-link[href="#contact"]').click()
     assert page.locator('#menuToggle').get_attribute('aria-expanded')=='false'
-    page.locator('.submit-btn').click()
-    assert page.locator('[aria-invalid="true"]').count()==4
-    for key,value in dict(name='Test',email='bad',subject='Hi',message='Hi').items(): page.locator(f'[name="{key}"]').fill(value)
-    page.locator('.submit-btn').click()
-    assert page.locator('[aria-invalid="true"]').count()==1
-    page.locator('[name="email"]').fill('test@example.invalid')
-    # In-process promises model provider behavior. No actual request leaves the page.
-    page.evaluate('''() => {
-      window.requests=[];
-      window.fetch=(url,options)=>new Promise((resolve,reject)=>{
-        window.requests.push({url,options});window.resolveMock=resolve;window.rejectMock=reject;
-      });
-    }''')
-    submit="document.querySelector('#contactForm').requestSubmit()"
-    page.evaluate(submit+';'+submit)
-    assert page.locator('.submit-btn').is_disabled()
-    assert page.locator('#contactForm').get_attribute('aria-busy')=='true'
-    assert page.evaluate('requests.length')==1
-    request=page.evaluate('requests[0]')
-    assert request['url']==BASE+'/api/contact'
-    assert request['options']['headers']['Content-Type']=='application/json'
-    assert json.loads(request['options']['body'])['message']=='Hi'
-    key=request['options']['headers']['Idempotency-Key']
-    page.evaluate("resolveMock(new Response(JSON.stringify({ok:false}),{status:502}))")
-    page.wait_for_function("document.querySelector('#formStatus').textContent.includes('could not be confirmed')")
-    assert page.locator('[name="message"]').input_value()=='Hi'
-    page.evaluate(submit)
-    assert page.evaluate('requests[1].options.headers["Idempotency-Key"]')==key
-    page.evaluate("resolveMock(new Response(JSON.stringify({ok:true}),{status:200}))")
-    page.wait_for_function("document.querySelector('#formStatus').textContent.includes('accepted for delivery')")
-    assert page.locator('[name="message"]').input_value()==''
-    for code,needle in [(503,'currently unavailable'),(429,'Too many'),(400,'check your message'),(403,'from this address'),(504,'timed out'),(200,'could not be confirmed')]:
-        for field,value in dict(name='Test',email='test@example.invalid',subject='Local test',message='A normal message for testing.').items(): page.locator(f'[name="{field}"]').fill(value)
-        page.evaluate(submit)
-        page.evaluate(f"resolveMock(new Response(JSON.stringify({{ok:false}}),{{status:{code}}}))")
-        page.wait_for_function('(needle)=>document.querySelector("#formStatus").textContent.includes(needle)',arg=needle)
-        assert page.locator('.submit-btn').is_enabled()
-    page.evaluate(submit)
-    page.evaluate("rejectMock(new DOMException('Mock timeout','TimeoutError'))")
-    page.wait_for_function("document.querySelector('#formStatus').textContent.includes('timed out')")
-    page.evaluate(submit)
-    page.evaluate("rejectMock(new TypeError('Mock offline'))")
-    page.wait_for_function("document.querySelector('#formStatus').textContent.includes('could not be confirmed')")
-    results['frontend_validation_loading_duplicates_idempotency_success_errors']='PASS (fetch mocked)'
+    from compose_checks import check_compose
+    check_compose(page)
+    results['compose_validation_encoding_handoffs_fallback_preservation_no_fetch']='PASS (handoffs intercepted)'
     page.goto(BASE+'/about.html')
     assert page.locator('h1').count()==1
     assert page.request.get(BASE+'/api/contact').status==405

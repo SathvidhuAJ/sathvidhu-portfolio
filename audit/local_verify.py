@@ -100,30 +100,9 @@ with sync_playwright() as p:
     page.locator('#nextProjectBtn').dispatch_event('click')
     assert page.evaluate('scrollOptions.length === 2 && scrollOptions.every(o=>o.behavior === "instant")')
     results['reduced_motion_js_scroll'] = 'PASS'
-    # Mock a pending fetch to inspect loading and duplicate lock without network activity.
-    page.evaluate('''() => {
-      window.mockRequests=[];
-      window.fetch=(url,options)=>new Promise((resolve,reject)=>{
-        window.mockRequests.push({url,options}); window.resolveMock=resolve; window.rejectMock=reject;
-      });
-    }''')
-    for key,value in {'name':'Test','email':'test@example.invalid','subject':'Local verification','message':'Hello'}.items():
-        page.locator(f'[name="{key}"]').fill(value)
-    page.evaluate("document.querySelector('#contactForm').requestSubmit();document.querySelector('#contactForm').requestSubmit()")
-    assert page.locator('.submit-btn').is_disabled()
-    assert page.locator('#contactForm').get_attribute('aria-busy')=='true'
-    assert page.evaluate('mockRequests.length')==1
-    page.evaluate("rejectMock(new DOMException('Mock timeout','TimeoutError'))")
-    page.wait_for_function("document.querySelector('#formStatus').textContent.includes('timed out')")
-    assert page.locator('.submit-btn').is_enabled()
-    assert page.locator('[name="message"]').input_value()=='Hello'
-    page.evaluate("document.querySelector('#contactForm').requestSubmit()")
-    page.evaluate("rejectMock(new TypeError('Mock offline'))")
-    page.wait_for_function("document.querySelector('#formStatus').textContent.includes('could not be confirmed')")
-    page.locator('[name="message"]').fill('   ')
-    page.evaluate("document.querySelector('#contactForm').requestSubmit()")
-    assert page.locator('[name="message"]').get_attribute('aria-invalid')=='true'
-    results['loading_duplicate_timeout_offline_whitespace'] = 'PASS (fetch mocked)'
+    from compose_checks import check_compose
+    check_compose(page)
+    results['compose_workflow']='PASS (handoffs intercepted, no submission)'
     assert not posts, posts
     assert not errors, errors
     assert not failed_local, failed_local

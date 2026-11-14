@@ -1,4 +1,34 @@
-(() => {
+// Pure draft construction: no storage, network requests or delivery claims.
+const ContactDraft = (() => {
+  const recipient = 'sathvidhu@gmail.com';
+  const limits = { name: 100, email: 254, subject: 200, message: 5000 };
+  function prepare(input) {
+    const values = {}, errors = {};
+    for (const [key, max] of Object.entries(limits)) {
+      const value = typeof input[key] === 'string' ? input[key].trim() : '';
+      values[key] = value;
+      if (!value) errors[key] = `Please enter your ${key}.`;
+      else if (value.length > max) errors[key] = `Please use at most ${max} characters.`;
+      else if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (key !== 'message' && /[\r\n]/.test(value))) errors[key] = `Please check your ${key}.`;
+      else { try { encodeURIComponent(value); } catch { errors[key] = `Please check your ${key} for unsupported characters.`; } }
+    }
+    const email = values.email;
+    const local = email.split('@')[0];
+    if (!errors.email && (!/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)+$/.test(email) || local.length > 64 || local.startsWith('.') || local.endsWith('.') || local.includes('..'))) errors.email = 'Please enter a valid email address.';
+    if (Object.keys(errors).length) return { values, errors };
+    const body = `Hello Sathvidhu,\n\nYou have a portfolio inquiry.\n\nName: ${values.name}\nEmail: ${email}\nSubject: ${values.subject}\n\nMessage:\n${values.message}\n\nRegards,\n${values.name}`;
+    const encodedBody = encodeURIComponent(body.replace(/\r\n|\r|\n/g, '\r\n'));
+    const subject = encodeURIComponent(values.subject);
+    return { values, errors, body,
+      mailto: `mailto:${recipient}?subject=${subject}&body=${encodedBody}`,
+      gmail: `https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&su=${subject}&body=${encodedBody}`,
+      manual: `To: ${recipient}\nSubject: ${values.subject}\n\n${body}`
+    };
+  }
+  return { prepare, recipient, maxMailto: 1800, maxGmail: 8000 };
+})();
+if (typeof module !== 'undefined' && module.exports) module.exports = ContactDraft;
+else (() => {
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 
@@ -581,95 +611,64 @@
 
   const form = $('#contactForm'), status = $('#formStatus');
   if (form) {
-    let sending = false;
-    let submissionKey, submissionFingerprint;
-    const usesEmailApi = form.dataset.contactProvider === 'resend';
-    const button = $('button[type="submit"]', form);
-    const buttonLabel = button.innerHTML;
     const fields = ['name', 'email', 'subject', 'message'];
-    function validate(key) {
-      const input = form.elements.namedItem(key);
-      const value = input.value.trim();
-      let error = !value ? `Please enter your ${key}.` : '';
-      if (!error && key === 'email' && !/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)+$/.test(value)) error = 'Please enter a valid email address.';
-      if (!error && key === 'email') {
-        const localPart = value.split('@')[0];
-        if (localPart.length > 64 || localPart.startsWith('.') || localPart.endsWith('.') || localPart.includes('..')) error = 'Please enter a valid email address.';
-      }
-      if (!error && (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || (key !== 'message' && /[\r\n]/.test(value)))) error = `Please check your ${key}.`;
-      if (!error && value.length > input.maxLength) error = `Please use at most ${input.maxLength} characters.`;
-      input.classList.toggle('invalid', !!error);
-      input.setAttribute('aria-invalid', String(!!error));
-      document.getElementById(key + 'Error').textContent = error;
-      return !error;
+    const gmailLink = $('#gmailDraftLink');
+    const details = $('#draftDetails');
+    const manual = $('#manualDraft');
+    // Submit controls start disabled in HTML so failed/disabled JS never posts data.
+    $$('button', form).forEach(button => button.disabled = false);
+    function clearDraft() {
+      status.textContent = '';
+      gmailLink.hidden = true; gmailLink.removeAttribute('href');
+      details.hidden = true; details.open = false; manual.value = '';
     }
-    fields.forEach(key => form.elements.namedItem(key).addEventListener('input', () => {
-      if (form.elements.namedItem(key).getAttribute('aria-invalid') === 'true') validate(key);
-      if (!sending) status.textContent = '';
-    }));
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      if (sending) return;
-      const invalid = fields.filter(key => !validate(key));
-      if (invalid.length) {
+    function prepareDraft() {
+      clearDraft();
+      const draft = ContactDraft.prepare(Object.fromEntries(fields.map(key => [key, form.elements.namedItem(key).value])));
+      for (const key of fields) {
+        const error = draft.errors[key] || '';
+        const input = form.elements.namedItem(key);
+        input.classList.toggle('invalid', !!error);
+        input.setAttribute('aria-invalid', String(!!error));
+        document.getElementById(key + 'Error').textContent = error;
+      }
+      const firstInvalid = fields.find(key => draft.errors[key]);
+      if (firstInvalid) {
         status.textContent = 'Please check the highlighted fields.';
-        status.style.color = '#e8a5af';
-        form.elements.namedItem(invalid[0]).focus();
+        form.elements.namedItem(firstInvalid).focus();
         return;
       }
-      if (form.elements.namedItem('bot-field')?.value.trim()) return;
-      sending = true;
-      button.disabled = true;
-      button.textContent = 'Sending…';
-      form.setAttribute('aria-busy', 'true');
-      status.textContent = 'Sending your message…';
-      status.style.color = '#80c99f';
-      const data = new URLSearchParams(new FormData(form));
-      fields.forEach(key => data.set(key, data.get(key).trim()));
-      data.set('form-name', 'contact');
-      try {
-        const payload = Object.fromEntries([...data].filter(([key]) => key !== 'form-name'));
-        const fingerprint = JSON.stringify(payload);
-        if (usesEmailApi && fingerprint !== submissionFingerprint) {
-          submissionKey = crypto.randomUUID();
-          submissionFingerprint = fingerprint;
-        }
-        const response = await fetch(form.action, {
-          method: 'POST',
-          headers: usesEmailApi
-            ? { 'Content-Type': 'application/json', 'Idempotency-Key': submissionKey }
-            : { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: usesEmailApi ? JSON.stringify(payload) : data.toString(),
-          signal: AbortSignal.timeout(20000)
-        });
-        const result = usesEmailApi ? await response.json().catch(() => null) : null;
-        if (!response.ok || (usesEmailApi && result?.ok !== true)) {
-          const failure = new Error('Submission failed');
-          failure.httpStatus = response.status;
-          throw failure;
-        }
-        status.textContent = usesEmailApi ? 'Thank you! Your message was accepted for delivery.' : 'Thank you! Your message has been submitted.';
-        form.reset();
-        submissionKey = submissionFingerprint = undefined;
-      } catch (error) {
-        status.style.color = '#e8a5af';
-        status.textContent = error.httpStatus === 503
-          ? 'Contact email is currently unavailable. Please email sathvidhu@gmail.com.'
-          : error.httpStatus === 429
-          ? 'Too many attempts. Please try later or email sathvidhu@gmail.com.'
-          : error.httpStatus === 400
-          ? 'Please check your message details and try again.'
-          : error.httpStatus === 403
-          ? 'Messages cannot be submitted from this address. Please email sathvidhu@gmail.com.'
-          : error.name === 'TimeoutError' || error.httpStatus === 504
-          ? 'The request timed out. Your message may have arrived. Please email sathvidhu@gmail.com before retrying.'
-          : 'Your submission could not be confirmed. Please try again or email sathvidhu@gmail.com.';
-      } finally {
-        sending = false;
-        button.disabled = false;
-        button.innerHTML = buttonLabel;
-        form.removeAttribute('aria-busy');
+      manual.value = draft.manual;
+      details.hidden = false;
+      return draft;
+    }
+    fields.forEach(key => form.elements.namedItem(key).addEventListener('input', () => {
+      clearDraft();
+      const input = form.elements.namedItem(key);
+      if (input.getAttribute('aria-invalid') === 'true') {
+        const result = ContactDraft.prepare({ [key]: input.value });
+        const error = result.errors[key] || '';
+        input.classList.toggle('invalid', !!error);
+        input.setAttribute('aria-invalid', String(!!error));
+        document.getElementById(key + 'Error').textContent = error;
       }
+    }));
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const draft = prepareDraft();
+      if (!draft) return;
+      if (draft.gmail.length > ContactDraft.maxGmail) {
+        status.textContent = 'Draft too long for a Gmail link. Copy the complete draft below.';
+        details.open = true;
+        return;
+      }
+      gmailLink.href = draft.gmail; gmailLink.hidden = false;
+      status.textContent = 'Review the draft and press Send. Gmail sign-in may be required.';
+      // With noopener, browsers may return null even when opening succeeds.
+      // Keep retry links in collapsed options rather than claiming popup success.
+      try { window.open(draft.gmail, '_blank', 'noopener,noreferrer'); }
+      catch { details.open = true; status.textContent = 'Could not open Gmail. Retry or copy the draft below.'; }
     });
+
   }
 })();

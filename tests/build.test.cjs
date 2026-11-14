@@ -4,16 +4,15 @@ const {execFileSync}=require('node:child_process');
 const {readFileSync,readdirSync}=require('node:fs');
 const {resolve}=require('node:path');
 
-test('build separates Vercel API from assets and preserves Netlify source',()=>{
+test('build preserves compose source and keeps the legacy API outside assets',()=>{
   const source=readFileSync('public/index.html','utf8');
   execFileSync(process.execPath,['scripts/build-vercel.cjs']);
   const built=readFileSync('dist/index.html','utf8');
   assert.equal(readFileSync('public/index.html','utf8'),source);
-  assert.ok(source.includes('data-contact-provider="netlify"'));
-  assert.ok(source.includes('data-netlify="true"'));
-  assert.ok(built.includes('data-contact-provider="resend"'));
-  assert.ok(built.includes('action="/api/contact"'));
-  assert.ok(!built.includes('data-netlify='));assert.ok(!built.includes('name="form-name"'));
+  assert.equal(built,source);
+  assert.ok(built.includes('data-contact-provider="compose"'));
+  assert.ok(!/data-netlify=|action="\/api\/contact"|name="form-name"/.test(built));
+  assert.ok(built.includes('id="gmailCompose"'));
   const config=JSON.parse(readFileSync('vercel.json'));
   assert.equal(config.outputDirectory,'dist');assert.equal(config.framework,null);
   assert.ok(config.functions['api/contact.js']);assert.equal(config.rewrites,undefined);

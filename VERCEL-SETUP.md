@@ -1,6 +1,14 @@
-# Vercel contact email setup
+# Vercel hosting and contact drafts
 
 Vercel is primary at the user-approved https://sathvidhu-portfolio.vercel.app/; Netlify is legacy/secondary. Local code is prepared. No account resources, DNS records, Git remotes, repositories or deployments have been created or changed. No real email has been sent. The user confirmed that no verified sending domain is currently available.
+
+## Current contact workflow (Phase 3F)
+
+The frontend uses free email compose, not the retained contact API. Open in Gmail is the sole form action and opens Google's compose URL in a separate tab with the draft contents; login may be required. The visible email-address link remains available for visitors using another configured email client. Visitors review and press Send themselves. Opening a draft never automatically sends email or proves delivery. Name, email, subject and multiline message remain in the form.
+
+No backend credentials or environment changes are required for compose. Keep production CONTACT_ENABLED=false for the unused API; its actual production value was not inspected or changed. Keep the API and related tests until separate cleanup is approved. The legacy configuration below is reference material only and must not be followed to enable sending for this workflow.
+
+The browser cannot reliably detect an installed email handler or whether a noopener Gmail tab opened. Retry links and a selectable complete plain-text draft are kept in compact, expandable draft options. Gmail handoffs above 8,000 URL characters are withheld with manual-copy instructions; these conservative thresholds cannot guarantee every application's limits. Nothing is truncated. Choosing Gmail shares draft contents with Google through its compose URL. No visitor content is logged, stored locally or submitted to this site's API. JavaScript-disabled visitors get a direct email link and disabled draft controls.
 
 ## Local development and verification
 
@@ -24,7 +32,7 @@ python audit/local_verify.py
 python audit/vercel_browser.py
 ```
 
-The Python tests require Python Playwright and its Chromium browser to be installed. They are verification tools, not application runtime dependencies. Contact traffic in browser tests is mocked; the Vercel browser test also checks the disabled localhost endpoint. Node API tests inject mocked Redis/Resend responses and never call real services.
+The Python tests require Python Playwright and its Chromium browser to be installed. They are verification tools, not application runtime dependencies. Email/Gmail handoffs in browser tests are intercepted without launching an email app or contacting Google; the Vercel browser test separately checks the retained disabled localhost API endpoint. Node API tests inject mocked Redis/Resend responses and never call real services.
 
 ## Deployment settings — only after explicit approval
 
@@ -42,11 +50,11 @@ The Python tests require Python Playwright and its Chromium browser to be instal
 
 Build safety: staging and uniquely named `.dist-backup-*/dist` backups stay beside `dist/` on the same filesystem. The exact eight-file publish set is validated recursively before replacement. Existing output is retained without merging stale files; backups are never overwritten or automatically deleted. Generated staging is cleaned on ordinary failures, and a failed publish attempts rollback. If the filesystem also rejects rollback, the old output remains in the reported backup and the build fails; manual recovery is required before publishing. Permission failures, external concurrent writers and process termination cannot be made transactional by directory renames. Run only one build per checkout at a time. No system-temporary-directory rename is needed. Staging/backup directories are ignored and excluded from output.
 
-The build copies only public assets to dist/, changes the contact provider to Resend and the action to /api/contact, and removes Netlify-only form metadata from the generated HTML. It does not modify public/. The API remains outside static output, where Vercel's Node function builder detects it. Actual Vercel function packaging/routing must be confirmed in a deployment; the local server is not the Vercel runtime.
+The build copies only the validated public assets to dist/ and verifies the compose marker. Source and generated contact markup are identical; no API/Netlify submission action is added. It does not modify public/. The API remains outside static output, where Vercel's Node function builder detects it. Actual Vercel function packaging/routing must be confirmed in a deployment; the local server is not the Vercel runtime.
 
 [Vercel Node runtime and API routing](https://vercel.com/docs/functions/runtimes/node-js), [build settings](https://vercel.com/docs/builds/configure-a-build), [supported Node versions](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions).
 
-## Provider and domain setup
+## Legacy API reference: provider and domain setup (unused; do not enable)
 
 1. Obtain control of a sending domain or subdomain. A Netlify/Vercel hosting subdomain is not a domain you can verify for sending mail. Do not use the visitor's address, a Gmail address, or Resend's shared test sender as the production From address.
 2. Add the domain/subdomain in Resend. Add the exact SPF and DKIM DNS records shown in its dashboard, including its supplied host names and record types. Do not invent DNS values. DMARC can be added according to your domain's mail policy. Wait until Resend shows the sending domain as verified.
@@ -81,23 +89,23 @@ The cap allows at most 40 provider attempts/day and roughly 1,240/month at full 
 
 ## Preserve the current Netlify deployment and repositories
 
-The existing netlify.toml still publishes public/. Its form keeps data-netlify, form-name and the honeypot; it continues to POST URL-encoded data to /. Resend is used only by the generated Vercel output. Netlify storage/notification configuration is still managed in Netlify and has not been verified or changed here.
+The existing netlify.toml still publishes public/. Both hosting platforms now use the same client-side compose form with no Netlify Forms metadata or API submission. No Netlify storage or notification setup is needed for compose.
 
 Do not change the existing origin or push merely to set up the second account. A future push to the existing connected branch can trigger Netlify automatically. After reviewing these changes, explicitly approve a commit and choose how to copy the approved revision to a second account/repository. Creating that repository, granting Vercel access and copying the source/history are separate approved steps. A separate clone/check-out can preserve this checkout's existing origin. Avoid transferring .env files or account credentials. No remote-creation or push command has been run for this upgrade.
 
 The user-approved primary URL is https://sathvidhu-portfolio.vercel.app/ (Phase 3C). Canonical URLs, sharing metadata, structured data, sitemap and robots now identify that origin. This is an approved target, not proof of live deployment or domain ownership verified by these local checks.
 
-Production CONTACT_ALLOWED_ORIGINS must allow the primary origin exactly, without a trailing slash or path. VERCEL_URL remains platform-provided and permits the deployment hostname; it is not a substitute for configuring stable aliases. No environment values were changed. The API expects same-origin JSON requests and does not grant cross-origin CORS access. Keep all other contact prerequisites above in place.
+For the retained, unused API only, CONTACT_ALLOWED_ORIGINS must allow the primary origin exactly, without a trailing slash or path. VERCEL_URL remains platform-provided and permits the deployment hostname; it is not a substitute for configuring stable aliases. No environment values were changed. The API expects same-origin JSON requests and does not grant cross-origin CORS access. Keep all other contact prerequisites above in place.
 
 The legacy Netlify site may continue serving duplicate content until a hosting-specific migration is approved. Recommend a path-preserving permanent redirect from the legacy host to the primary, configured only for Netlify after confirming scope. Do not add shared noindex directives or Vercel redirects. No redirects, DNS, dashboards or indexing directives were changed in this phase. Historical audit reports retain their original Netlify references as historical evidence.
 
-## Authorized production verification procedure
+## Legacy API verification reference (not part of compose release)
 
 1. Approve the exact target deployment and sender/recipient, and separately approve one test email with a specified harmless payload. Do not send tests until that approval is given.
 2. In the approved deployment, verify that /, /about.html, images, CSS and JS return successfully; /api/contact responds as an API rather than homepage HTML. GET should return 405. Check Vercel's deployment output lists the contact function.
 3. Confirm secrets are absent from static output and sending is disabled in unapproved preview environments. Check Resend's domain status, the allowed site origin and Redis connectivity in their account dashboards.
 4. After sending is authorized, set CONTACT_ENABLED=true for the approved environment and deploy the environment change with approval. Submit exactly the approved message once.
 5. A successful API response means Resend returned an email id. Check the provider's event history for delivery, then separately confirm the message in sathvidhu@gmail.com's inbox or spam folder and verify Reply-To. Acceptance alone is not proof of receipt.
-6. For an ambiguous timeout, retry the identical message on the same page only after reviewing provider events. The browser retains its submission key for unchanged retries, and Resend deduplicates that key for 24 hours. Reloading the page or editing the message creates a new submission. Do not blindly submit repeated test messages.
+6. For an ambiguous timeout, retry the identical message on the same page only after reviewing provider events. A separate legacy API client would need to retain an idempotency key for unchanged retries; the current compose frontend has no API submission or idempotency key. Do not blindly submit repeated test messages.
 
 Code preparation and mocked tests do not establish provider configuration, Vercel deployment, domain verification or inbox delivery.

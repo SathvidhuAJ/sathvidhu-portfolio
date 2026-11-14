@@ -27,38 +27,8 @@ with sync_playwright() as p:
     page.set_viewport_size({'width':1440,'height':900})
     page.locator('#contact').scroll_into_view_if_needed()
     submit = page.locator('.submit-btn')
-    submit.click()
-    assert page.locator('[aria-invalid="true"]').count() == 4
-    values = {'name':'A','email':'invalid','subject':'Hi','message':'Hi'}
-    for key,value in values.items(): page.locator(f'[name="{key}"]').fill(value)
-    submit.click()
-    assert page.locator('[aria-invalid="true"]').count() == 1
-    page.locator('[name="email"]').fill('audit@example.com')
-    requests = []
-    def intercept(route):
-        requests.append(route.request.post_data)
-        route.fulfill(status=200, body='Submitted')
-    page.route('http://127.0.0.1:8765/', intercept)
-    submit.click()
-    page.wait_for_function("document.querySelector('#formStatus').textContent.includes('Thank you')")
-    assert len(requests) == 1 and 'message=Hi' in requests[0] and 'form-name=contact' in requests[0]
-    for key,value in dict(values,email='audit@example.com',message='A normal message about a project opportunity.').items():
-        page.locator(f'[name="{key}"]').fill(value)
-    page.unroute('http://127.0.0.1:8765/')
-    page.route('http://127.0.0.1:8765/', lambda route: route.fulfill(status=500))
-    submit.click()
-    page.wait_for_function("document.querySelector('#formStatus').textContent.includes('could not be confirmed')")
-    assert page.locator('[name="message"]').input_value().startswith('A normal')
-    assert submit.is_enabled()
-    page.unroute('http://127.0.0.1:8765/')
-    def delayed(route):
-        page.wait_for_timeout(500)
-        requests.append(route.request.post_data)
-        route.fulfill(status=200)
-    page.route('http://127.0.0.1:8765/', delayed)
-    page.evaluate("document.querySelector('#contactForm').requestSubmit(); document.querySelector('#contactForm').requestSubmit()")
-    page.wait_for_function("document.querySelector('#formStatus').textContent.includes('Thank you')")
-    assert len(requests) == 2
+    from compose_checks import check_compose
+    check_compose(page)
     assert not errors, errors
-    print(json.dumps({'cards':5,'viewports':[1440,390],'modal_links':'passed','focus_restore':'passed','validation':'passed','short_message':'passed','normal_message':'passed','success_and_failure':'passed (mock transport)','duplicate_prevention':'passed','browser_errors':errors}))
+    print(json.dumps({'cards':5,'viewports':[1440,390],'modal_links':'passed','focus_restore':'passed','validation':'passed','short_message':'passed','normal_message':'passed','compose':'passed (handoffs intercepted)','browser_errors':errors}))
     browser.close()

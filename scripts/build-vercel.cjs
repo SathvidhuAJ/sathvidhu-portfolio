@@ -1,4 +1,4 @@
-const { readFileSync, writeFileSync, readdirSync, lstatSync, copyFileSync, mkdtempSync, renameSync, existsSync, unlinkSync, rmdirSync } = require('node:fs');
+const { readFileSync, readdirSync, lstatSync, copyFileSync, mkdtempSync, renameSync, existsSync, unlinkSync, rmdirSync } = require('node:fs');
 const { resolve, join, relative, isAbsolute } = require('node:path');
 const root = resolve(__dirname, '..');
 const output = resolve(root, 'dist');
@@ -44,15 +44,8 @@ function cleanStaging() {
 }
 try {
   for (const file of expected) copyFileSync(join(source, file), join(staging, file));
-  const index = resolve(staging, 'index.html');
-  let html = readFileSync(index, 'utf8');
-  if (!html.includes('data-contact-provider="netlify"')) throw new Error('Missing contact provider marker');
-  html = html.replace('data-contact-provider="netlify"', 'data-contact-provider="resend"')
-    .replace('action="/" data-netlify-honeypot="bot-field"', 'action="/api/contact"')
-    .replace(' data-netlify="true"', '')
-    .replace(/\s*<input type="hidden" name="form-name" value="contact">/, '');
-  if (!html.includes('action="/api/contact"')) throw new Error('Missing Vercel endpoint');
-  writeFileSync(index, html);
+  const html = readFileSync(join(staging, 'index.html'), 'utf8');
+  if (!html.includes('data-contact-provider="compose"') || /action="\/api\/contact"|data-netlify=/.test(html)) throw new Error('Missing safe compose form marker');
   validate(staging);
   if (existsSync(output)) {
     backup = mkdtempSync(join(root, '.dist-backup-'));
