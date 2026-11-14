@@ -11,3 +11,7 @@ node_modules/
 # Per-run verification output and local diagnostics (keep test source).
 audit/*-results.json
 *.log
+
+# Build-owned staging and preserved previous output (never publish or commit).
+.dist-build-*/
+.dist-backup-*/

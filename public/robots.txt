@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://aj-sath.netlify.app/sitemap.xml
+Sitemap: https://sathvidhu-portfolio.vercel.app/sitemap.xml

@@ -7,12 +7,14 @@
   <meta name="description" content="Sathvidhu A J is a BCA student and aspiring frontend developer from India, building responsive web applications and practical software projects.">
   <meta name="author" content="Sathvidhu A J">
   <meta name="robots" content="index,follow">
-  <link rel="canonical" href="https://aj-sath.netlify.app/">
+  <link rel="canonical" href="https://sathvidhu-portfolio.vercel.app/">
   <meta property="og:title" content="Sathvidhu A J | Aspiring Frontend Developer">
   <meta property="og:description" content="Explore the portfolio, projects, skills and developer journey of Sathvidhu A J.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://aj-sath.netlify.app/">
-  <meta property="og:image" content="https://aj-sath.netlify.app/sathvidhu-logo.png">
+  <meta property="og:url" content="https://sathvidhu-portfolio.vercel.app/">
+  <meta property="og:image" content="https://sathvidhu-portfolio.vercel.app/sathvidhu-logo.png">
+  <meta name="twitter:url" content="https://sathvidhu-portfolio.vercel.app/">
+  <meta name="twitter:image" content="https://sathvidhu-portfolio.vercel.app/sathvidhu-logo.png">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Sathvidhu A J | Aspiring Frontend Developer">
   <meta name="twitter:description" content="Portfolio, projects and developer journey of Sathvidhu A J.">
@@ -22,11 +24,11 @@
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Sathvidhu A J | Developer Portfolio",
-    "url": "https://aj-sath.netlify.app/",
+    "url": "https://sathvidhu-portfolio.vercel.app/",
     "about": {
       "@type": "Person",
       "name": "Sathvidhu A J",
-      "url": "https://aj-sath.netlify.app/about.html",
+      "url": "https://sathvidhu-portfolio.vercel.app/about.html",
       "jobTitle": "Aspiring Frontend Developer",
       "description": "BCA student interested in frontend development and building responsive web applications.",
       "sameAs": [
@@ -44,6 +46,7 @@
   <link rel="stylesheet" href="/theme.css">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <canvas id="particleCanvas" aria-hidden="true"></canvas>
   <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
   <div class="custom-cursor" id="customCursor" aria-hidden="true">
@@ -73,7 +76,7 @@
     </nav>
   </header>
 
-  <main>
+  <main id="main-content" tabindex="-1">
     <section id="home" class="hero section container">
       <div class="hero-copy reveal">
         <div class="eyebrow"><span class="status-dot"></span> Available for selected opportunities</div>
@@ -112,6 +115,7 @@
       <div class="about-grid">
         <div class="reveal">
           <span class="section-tag">About Me</span>
+          <p><a class="about-page-link" href="/about.html">Read more about me &rarr;</a></p>
           <h2>Developer mindset,<br><em>product thinking.</em></h2>
         </div>
         <div class="about-copy reveal reveal-delay">
@@ -174,6 +178,17 @@
             </button>
           </div>
         </div>
+      </div>
+      <div id="projectFallback" class="project-fallback">
+        <h3>Explore my projects</h3>
+        <p>Browse the source code and documentation on GitHub:</p>
+        <ul>
+          <li><a href="https://github.com/Sathvidhu/Mini-Project">Smart Study Planner</a> &mdash; PHP study schedules, resources and mock tests.</li>
+          <li><a href="https://github.com/Sathvidhu/invoice-app">Invoice App</a> &mdash; Clients, itemized invoices and payment tracking.</li>
+          <li><a href="https://github.com/Sathvidhu/todo-app">Todo App</a> &mdash; Persistent tasks with priorities and due dates.</li>
+          <li><a href="https://github.com/Sathvidhu/Chatbot">Local Python Chatbot</a> &mdash; A local text-generation learning experiment.</li>
+          <li><a href="https://github.com/Sathvidhu/Website">Personal Website</a> &mdash; An early static portfolio.</li>
+        </ul>
       </div>
       <div class="project-track" id="projectTrack"></div>
     </section>

@@ -258,8 +258,6 @@
     event.preventDefault();
     target.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
     history.replaceState(null, '', link.hash);
-    $('#navLinks')?.classList.remove('open');
-    $('#menuToggle')?.setAttribute('aria-expanded', 'false');
   }));
 
 
@@ -276,9 +274,10 @@
       btn.className = `filter-chip ${cat === activeTechCategory ? 'active' : ''}`;
       btn.textContent = cat;
       btn.type = 'button';
+      btn.setAttribute('aria-pressed', String(cat === activeTechCategory));
       btn.addEventListener('click', () => {
         activeTechCategory = cat;
-        $$('.filter-chip', techFiltersContainer).forEach(b => b.classList.toggle('active', b === btn));
+        $$('.filter-chip', techFiltersContainer).forEach(b => { b.classList.toggle('active', b === btn); b.setAttribute('aria-pressed', String(b === btn)); });
         renderTechStack();
       });
       techFiltersContainer.appendChild(btn);
@@ -333,10 +332,11 @@
       button.className = `filter ${category === activeFilter ? 'active' : ''}`;
       button.textContent = category;
       button.dataset.filter = category;
+      button.setAttribute('aria-pressed', String(category === activeFilter));
       button.type = 'button';
       button.addEventListener('click', () => {
         activeFilter = category;
-        $$('.filter', filters).forEach(b => b.classList.toggle('active', b === button));
+        $$('.filter', filters).forEach(b => { b.classList.toggle('active', b === button); b.setAttribute('aria-pressed', String(b === button)); });
         renderProjects();
       });
       filters.appendChild(button);
@@ -376,6 +376,7 @@
     
     $$('.view-project', track).forEach(button => button.addEventListener('click', e => openModal(Number(e.currentTarget.closest('.project-card').dataset.project))));
     track.scrollLeft = 0;
+    document.getElementById('projectFallback')?.setAttribute('hidden', '');
     observeReveals(track);
   }
 
@@ -523,8 +524,26 @@
 
   const menuToggle = $('#menuToggle'), navLinks = $('#navLinks');
   if (menuToggle && navLinks) {
-    menuToggle.addEventListener('click', () => { const open = navLinks.classList.toggle('open'); menuToggle.setAttribute('aria-expanded', String(open)); });
-    $$('.nav-link, .resume-btn').forEach(a => a.addEventListener('click', () => { navLinks.classList.remove('open'); menuToggle.setAttribute('aria-expanded','false'); }));
+    const mobileNav = window.matchMedia('(max-width: 650px)');
+    menuToggle.setAttribute('aria-controls', 'navLinks');
+    function setMenuOpen(open) {
+      open = mobileNav.matches && open;
+      const closing = mobileNav.matches && !open;
+      if (closing && navLinks.contains(document.activeElement)) menuToggle.focus();
+      navLinks.classList.toggle('open', open);
+      navLinks.inert = closing;
+      menuToggle.setAttribute('aria-expanded', String(open));
+    }
+    menuToggle.addEventListener('click', () => setMenuOpen(!navLinks.classList.contains('open')));
+    navLinks.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setMenuOpen(false)));
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && mobileNav.matches && navLinks.classList.contains('open')) {
+        setMenuOpen(false);
+        menuToggle.focus();
+      }
+    });
+    mobileNav.addEventListener('change', () => setMenuOpen(false));
+    setMenuOpen(false);
   }
 
   const sections = ['home','about','techStackSection','projects','contact'].map(id => document.getElementById(id)).filter(Boolean);
@@ -545,8 +564,18 @@
   function observeReveals(root=document){
     const elements = $$('.reveal',root).filter(el => !el.dataset.observed);
     if(!('IntersectionObserver' in window)){elements.forEach(el=>el.classList.add('visible'));return;}
-    const observer = new IntersectionObserver(entries => entries.forEach(entry => {if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target);}}), {threshold:.08});
-    elements.forEach(el=>{el.dataset.observed='1';observer.observe(el);});
+    // Only opt elements into hiding after the observer exists. A deadline keeps
+    // content visible even if observation or later JavaScript stops working.
+    const reveal = el => { el.classList.add('visible'); el.classList.remove('reveal-pending'); };
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+      if(entry.isIntersecting){reveal(entry.target);observer.unobserve(entry.target);}
+    }), {threshold:.08});
+    elements.forEach(el=>{
+      el.dataset.observed='1';
+      const deadline = setTimeout(() => { reveal(el); observer.unobserve(el); }, 4000);
+      try { observer.observe(el); el.classList.add('reveal-pending'); }
+      catch { clearTimeout(deadline); reveal(el); }
+    });
   }
   observeReveals();
 

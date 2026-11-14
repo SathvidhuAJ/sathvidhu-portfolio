@@ -1481,7 +1481,8 @@ a.social-icon-card:hover {
 }
 
 /* Animations */
-.reveal {
+.reveal { opacity: 1; transform: none; transition: opacity .75s ease, transform .75s ease; }
+.reveal.reveal-pending {
   opacity: 0;
   transform: translateY(22px);
   transition: opacity .75s ease, transform .75s ease;
@@ -1582,6 +1583,7 @@ a.social-icon-card:hover {
     pointer-events: none;
     transition: .25s;
   }
+  .nav-links:not(.open) { visibility: hidden; }
   .nav-links.open {
     opacity: 1;
     transform: none;
@@ -1649,7 +1651,7 @@ a.social-icon-card:hover {
     animation: none !important;
     transition: none !important;
   }
-  .reveal {
+  .reveal, .reveal.reveal-pending {
     opacity: 1;
     transform: none;
   }
@@ -1666,3 +1668,8 @@ a.social-icon-card:hover {
     transform: none !important;
   }
 }
+
+.skip-link { position: fixed; top: 8px; left: 8px; z-index: 10000; padding: 12px 18px; background: var(--bg); color: var(--text); border: 2px solid var(--accent); transform: translateY(-150%); }
+.skip-link:focus { transform: none; }
+.project-fallback { padding: 24px; border: 1px solid var(--line); border-radius: var(--radius); }
+.project-fallback a, .about-page-link { text-decoration: underline; text-underline-offset: 4px; }

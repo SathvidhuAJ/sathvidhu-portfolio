@@ -5,6 +5,8 @@ const EMAIL = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Z
 const LIMIT_SCRIPT = `
 local n = redis.call('INCR', KEYS[1])
 if n == 1 then redis.call('EXPIRE', KEYS[1], 600) end
+-- An exhausted IP must not spend another global attempt. Keep this inside EVAL.
+if n > 5 then return {n, 1} end
 local total = redis.call('INCR', KEYS[2])
 if total == 1 then redis.call('EXPIRE', KEYS[2], 86400) end
 return {n, total}`;

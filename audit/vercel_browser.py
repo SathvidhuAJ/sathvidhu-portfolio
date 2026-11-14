@@ -23,6 +23,96 @@ with sync_playwright() as p:
     assert page.locator('#contactForm').get_attribute('action')=='/api/contact'
     assert page.locator('[name="form-name"]').count()==0
     assert page.locator('.project-card').count()==5
+    for path in ['/', '/about.html']:
+        page.set_viewport_size({'width':390,'height':900})
+        page.goto(BASE+path)
+        toggle=page.locator('#menuToggle')
+        links=page.locator('#navLinks')
+        assert links.evaluate('(e)=>e.inert')
+        toggle.focus()
+        page.keyboard.press('Tab')
+        assert not links.evaluate('(e)=>e.contains(document.activeElement)')
+        toggle.focus()
+        page.keyboard.press('Enter')
+        page.wait_for_function("getComputedStyle(document.querySelector('#navLinks')).visibility === 'visible'")
+        assert toggle.get_attribute('aria-expanded')=='true'
+        page.keyboard.press('Tab')
+        assert links.locator('a').first.evaluate('(e)=>e===document.activeElement')
+        page.keyboard.press('Escape')
+        assert toggle.evaluate('(e)=>e===document.activeElement')
+        assert links.evaluate('(e)=>e.inert')
+        page.keyboard.press('Enter')
+        page.wait_for_function("getComputedStyle(document.querySelector('#navLinks')).visibility === 'visible'")
+        page.keyboard.press('Tab')
+        page.set_viewport_size({'width':1440,'height':900})
+        page.wait_for_function("!document.querySelector('#navLinks').inert")
+        assert links.locator('a').first.evaluate('(e)=>e===document.activeElement')
+        page.set_viewport_size({'width':390,'height':900})
+        page.wait_for_function("document.querySelector('#navLinks').inert")
+        assert toggle.evaluate('(e)=>e===document.activeElement')
+        toggle.click()
+        links.locator('a').last.click()
+        assert toggle.get_attribute('aria-expanded')=='false'
+    results['both_pages_mobile_keyboard_escape_focus_resize']='PASS'
+    page.goto(BASE)
+    for path in ['/', '/about.html']:
+        page.goto(BASE+path)
+        page.keyboard.press('Tab')
+        assert page.locator('.skip-link').evaluate('(e)=>e===document.activeElement')
+        page.keyboard.press('Enter')
+        assert page.locator('main').evaluate('(e)=>e===document.activeElement')
+    page.goto(BASE)
+    assert page.locator('a[href="/about.html"]').count()>=1
+    assert page.locator('#projectFallback').is_hidden()
+    for selector in ['#filters .filter', '#techFilters .filter-chip']:
+        buttons=page.locator(selector)
+        assert buttons.first.get_attribute('aria-pressed')=='true'
+        buttons.nth(1).click()
+        assert buttons.nth(1).get_attribute('aria-pressed')=='true'
+        assert buttons.first.get_attribute('aria-pressed')=='false'
+        assert page.locator(selector+'[aria-pressed="true"]').count()==1
+        buttons.first.click()
+    results['skip_links_about_link_filter_states']='PASS'
+    for blocked in ['disabled', 'app.js', 'projects.js']:
+        fallback_context=browser.new_context(java_script_enabled=blocked!='disabled')
+        fallback_context.route('**/*', lambda route: route.continue_() if route.request.url.startswith(BASE+'/') else route.abort())
+        if blocked!='disabled': fallback_context.route('**/'+blocked, lambda route: route.abort())
+        fallback_page=fallback_context.new_page()
+        for width in [320,390,768,1440,1920]:
+            fallback_page.set_viewport_size({'width':width,'height':900})
+            fallback_page.goto(BASE)
+            assert fallback_page.locator('#projectFallback').is_visible()
+            assert fallback_page.locator('#projectFallback a').count()==5
+            assert fallback_page.locator('.project-card').count()==0
+            assert fallback_page.locator('.hero-copy').evaluate('(e)=>getComputedStyle(e).opacity')=='1'
+            assert fallback_page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        if blocked=='disabled':
+            fallback_page.set_viewport_size({'width':390,'height':900})
+            for path in ['/', '/about.html']:
+                fallback_page.goto(BASE+path)
+                assert fallback_page.locator('#navLinks').evaluate('(e)=>getComputedStyle(e).visibility')=='hidden'
+                fallback_page.locator('#menuToggle').focus()
+                fallback_page.keyboard.press('Tab')
+                assert not fallback_page.locator('#navLinks').evaluate('(e)=>e.contains(document.activeElement)')
+                fallback_page.goto(BASE+path)
+                fallback_page.keyboard.press('Tab')
+                assert fallback_page.locator('.skip-link').evaluate('(e)=>e===document.activeElement')
+                fallback_page.keyboard.press('Enter')
+                assert fallback_page.locator('main').evaluate('(e)=>e===document.activeElement')
+        fallback_context.close()
+    results['javascript_disabled_and_missing_scripts_five_widths']='PASS'
+    page.goto(BASE)
+    # A stalled observer must not leave baseline content hidden indefinitely.
+    stalled_context=browser.new_context()
+    stalled_context.route('**/*', lambda route: route.continue_() if route.request.url.startswith(BASE+'/') else route.abort())
+    stalled_context.add_init_script("window.IntersectionObserver = class { observe(){} unobserve(){} disconnect(){} };")
+    stalled_page=stalled_context.new_page()
+    stalled_page.goto(BASE)
+    assert stalled_page.locator('.reveal-pending').count()>0
+    stalled_page.wait_for_function("document.querySelectorAll('.reveal-pending').length === 0")
+    stalled_page.wait_for_function("getComputedStyle(document.querySelector('.hero-copy')).opacity === '1'")
+    stalled_context.close()
+    results['stalled_reveal_observer_deadline']='PASS'
     repos=['Mini-Project','invoice-app','todo-app','Chatbot','Website']
     for width in [390,1440]:
         page.set_viewport_size({'width':width,'height':900})

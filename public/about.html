@@ -7,12 +7,17 @@
   <meta name="description" content="Learn about Sathvidhu A J, a BCA student and aspiring frontend developer interested in JavaScript, React and responsive web development.">
   <meta name="author" content="Sathvidhu A J">
   <meta name="robots" content="index,follow">
-  <link rel="canonical" href="https://aj-sath.netlify.app/about.html">
+  <link rel="canonical" href="https://sathvidhu-portfolio.vercel.app/about.html">
   <meta property="og:title" content="About Sathvidhu A J | Frontend Developer">
   <meta property="og:description" content="Background, interests, skills and projects of Sathvidhu A J.">
   <meta property="og:type" content="profile">
-  <meta property="og:url" content="https://aj-sath.netlify.app/about.html">
-  <meta property="og:image" content="https://aj-sath.netlify.app/sathvidhu-logo.png">
+  <meta property="og:url" content="https://sathvidhu-portfolio.vercel.app/about.html">
+  <meta property="og:image" content="https://sathvidhu-portfolio.vercel.app/sathvidhu-logo.png">
+  <meta name="twitter:url" content="https://sathvidhu-portfolio.vercel.app/about.html">
+  <meta name="twitter:image" content="https://sathvidhu-portfolio.vercel.app/sathvidhu-logo.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="About Sathvidhu A J | Frontend Developer">
+  <meta name="twitter:description" content="Background, interests, skills and projects of Sathvidhu A J.">
   <title>About Sathvidhu A J | Aspiring Frontend Developer</title>
   <link rel="icon" type="image/png" href="/sathvidhu-logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,11 +29,11 @@
     "@context": "https://schema.org",
     "@type": "ProfilePage",
     "name": "About Sathvidhu A J",
-    "url": "https://aj-sath.netlify.app/about.html",
+    "url": "https://sathvidhu-portfolio.vercel.app/about.html",
     "mainEntity": {
       "@type": "Person",
       "name": "Sathvidhu A J",
-      "url": "https://aj-sath.netlify.app/",
+      "url": "https://sathvidhu-portfolio.vercel.app/",
       "jobTitle": "Aspiring Frontend Developer",
       "description": "BCA student building practical web development projects and learning modern frontend technologies.",
       "sameAs": [
@@ -55,6 +60,7 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="noise" aria-hidden="true"></div>
   <div class="bg-grid" aria-hidden="true"></div>
   <header class="nav-wrap">
@@ -74,7 +80,7 @@
       </div>
     </nav>
   </header>
-  <main class="about-page container">
+  <main id="main-content" class="about-page container" tabindex="-1">
     <span class="section-tag">About Me</span>
     <h1>Hi, I'm Sathvidhu <span>A J.</span></h1>
     <p class="about-intro">I'm a BCA student and aspiring Frontend Developer who enjoys turning ideas into clear, useful and responsive web experiences. I learn by building projects, exploring how products work end to end, and improving my approach with every iteration.</p>
@@ -114,16 +120,28 @@
     <div><a href="/">Back to portfolio ↑</a></div>
   </footer>
   <script>
-    const toggle = document.getElementById('menuToggle');
-    const links = document.getElementById('navLinks');
-    toggle?.addEventListener('click', () => {
-      const open = links.classList.toggle('open');
-      toggle.setAttribute('aria-expanded', String(open));
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+    const mobileNav = window.matchMedia('(max-width: 650px)');
+    menuToggle.setAttribute('aria-controls', 'navLinks');
+    function setMenuOpen(open) {
+      open = mobileNav.matches && open;
+      const closing = mobileNav.matches && !open;
+      if (closing && navLinks.contains(document.activeElement)) menuToggle.focus();
+      navLinks.classList.toggle('open', open);
+      navLinks.inert = closing;
+      menuToggle.setAttribute('aria-expanded', String(open));
+    }
+    menuToggle.addEventListener('click', () => setMenuOpen(!navLinks.classList.contains('open')));
+    navLinks.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setMenuOpen(false)));
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && mobileNav.matches && navLinks.classList.contains('open')) {
+        setMenuOpen(false);
+        menuToggle.focus();
+      }
     });
-    links?.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
-      links.classList.remove('open');
-      toggle?.setAttribute('aria-expanded', 'false');
-    }));
+    mobileNav.addEventListener('change', () => setMenuOpen(false));
+    setMenuOpen(false);
   </script>
 </body>
 </html>

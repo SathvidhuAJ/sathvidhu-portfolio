@@ -1,6 +1,6 @@
 # Vercel contact email setup
 
-Local code is prepared. No account resources, DNS records, Git remotes, repositories or deployments have been created or changed. No real email has been sent. The user confirmed that no verified sending domain is currently available.
+Vercel is primary at the user-approved https://sathvidhu-portfolio.vercel.app/; Netlify is legacy/secondary. Local code is prepared. No account resources, DNS records, Git remotes, repositories or deployments have been created or changed. No real email has been sent. The user confirmed that no verified sending domain is currently available.
 
 ## Local development and verification
 
@@ -39,6 +39,8 @@ The Python tests require Python Playwright and its Chromium browser to be instal
 | API | Root `api/contact.js`, served at `/api/contact` |
 | API duration | 30 seconds; outgoing rate check has a 3-second timeout and Resend a 10-second timeout |
 | Rewrites | None. Do not add an SPA catch-all rewrite |
+
+Build safety: staging and uniquely named `.dist-backup-*/dist` backups stay beside `dist/` on the same filesystem. The exact eight-file publish set is validated recursively before replacement. Existing output is retained without merging stale files; backups are never overwritten or automatically deleted. Generated staging is cleaned on ordinary failures, and a failed publish attempts rollback. If the filesystem also rejects rollback, the old output remains in the reported backup and the build fails; manual recovery is required before publishing. Permission failures, external concurrent writers and process termination cannot be made transactional by directory renames. Run only one build per checkout at a time. No system-temporary-directory rename is needed. Staging/backup directories are ignored and excluded from output.
 
 The build copies only public assets to dist/, changes the contact provider to Resend and the action to /api/contact, and removes Netlify-only form metadata from the generated HTML. It does not modify public/. The API remains outside static output, where Vercel's Node function builder detects it. Actual Vercel function packaging/routing must be confirmed in a deployment; the local server is not the Vercel runtime.
 
@@ -83,7 +85,11 @@ The existing netlify.toml still publishes public/. Its form keeps data-netlify, 
 
 Do not change the existing origin or push merely to set up the second account. A future push to the existing connected branch can trigger Netlify automatically. After reviewing these changes, explicitly approve a commit and choose how to copy the approved revision to a second account/repository. Creating that repository, granting Vercel access and copying the source/history are separate approved steps. A separate clone/check-out can preserve this checkout's existing origin. Avoid transferring .env files or account credentials. No remote-creation or push command has been run for this upgrade.
 
-Current canonical URLs, structured data, sitemap and robots reference the Netlify URL intentionally. Keep those for a secondary mirror, or approve an SEO-domain change once a new primary URL is chosen. Do not point both sites at competing primary URLs inadvertently.
+The user-approved primary URL is https://sathvidhu-portfolio.vercel.app/ (Phase 3C). Canonical URLs, sharing metadata, structured data, sitemap and robots now identify that origin. This is an approved target, not proof of live deployment or domain ownership verified by these local checks.
+
+Production CONTACT_ALLOWED_ORIGINS must allow the primary origin exactly, without a trailing slash or path. VERCEL_URL remains platform-provided and permits the deployment hostname; it is not a substitute for configuring stable aliases. No environment values were changed. The API expects same-origin JSON requests and does not grant cross-origin CORS access. Keep all other contact prerequisites above in place.
+
+The legacy Netlify site may continue serving duplicate content until a hosting-specific migration is approved. Recommend a path-preserving permanent redirect from the legacy host to the primary, configured only for Netlify after confirming scope. Do not add shared noindex directives or Vercel redirects. No redirects, DNS, dashboards or indexing directives were changed in this phase. Historical audit reports retain their original Netlify references as historical evidence.
 
 ## Authorized production verification procedure
 

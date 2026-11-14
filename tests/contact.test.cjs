@@ -95,3 +95,8 @@ for(const [label,provider,status] of [
 test('preview deployment hostname accepted only from trusted environment',async()=>{
   assert.equal((await invoke({config:{VERCEL_URL:'preview.vercel.app'},headers:{origin:'https://preview.vercel.app'}})).code,200);
 });
+
+test('fifth IP attempt and fortieth global attempt are accepted at the boundary',async()=>{
+  const result=await invoke({mock:url=>url.includes('upstash')?jsonResponse({result:[5,40]}):jsonResponse({id:'mock-provider-id'})});
+  assert.equal(result.code,200);assert.equal(result.calls.length,2);
+});
