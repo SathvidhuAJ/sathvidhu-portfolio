@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://sathvidhu-portfolio.vercel.app/sitemap.xml
+Sitemap: https://aj-sath.vercel.app/sitemap.xml

@@ -4,7 +4,7 @@ const {readFileSync, readdirSync, cpSync, mkdtempSync} = require('node:fs');
 const {join} = require('node:path');
 const {tmpdir} = require('node:os');
 const {execFileSync} = require('node:child_process');
-const primary = 'https://sathvidhu-portfolio.vercel.app';
+const primary = 'https://aj-sath.vercel.app';
 // Isolate output from other test files and preserve the repository's build output.
 const root = mkdtempSync(join(tmpdir(), 'sath-seo-test-'));
 for (const name of ['public','scripts']) cpSync(name,join(root,name),{recursive:true});
