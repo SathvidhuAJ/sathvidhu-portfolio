@@ -4,7 +4,7 @@ const {readFileSync, readdirSync, cpSync, mkdtempSync} = require('node:fs');
 const {join} = require('node:path');
 const {tmpdir} = require('node:os');
 const {execFileSync} = require('node:child_process');
-const primary = 'https://aj-sath.vercel.app';
+const primary = 'https://sath-aj.vercel.app';
 // Isolate output from other test files and preserve the repository's build output.
 const root = mkdtempSync(join(tmpdir(), 'sath-seo-test-'));
 for (const name of ['public','scripts']) cpSync(name,join(root,name),{recursive:true});
@@ -35,7 +35,7 @@ for (const directory of ['public','dist']) {
     assert.ok(sitemap.includes('xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'));
     const robots=readFileSync(join(root,directory,'robots.txt'),'utf8');
     assert.equal(robots.replace(/\r\n/g, '\n').trim(),`User-agent: *\nAllow: /\n\nSitemap: ${primary}/sitemap.xml`);
-    assert.equal(readdirSync(join(root,directory)).length,8);
+    assert.equal(readdirSync(join(root,directory)).length,9);
     for(const file of readdirSync(join(root,directory)).filter(n=>/\.(html|js|css|xml|txt)$/.test(n))) {
       assert.ok(!readFileSync(join(root,directory,file),'utf8').includes('aj-sath.netlify.app'),file);
     }

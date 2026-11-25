@@ -42,7 +42,7 @@ test('fresh output excludes nested stale output without deleting its contents',(
   mkdirSync(join(f.root,'dist','old'),{recursive:true});
   writeFileSync(join(f.root,'dist','old','audit.log'),'stale');
   f.build();assert.equal(existsSync(join(f.root,'dist','old')),false);
-  assert.equal(readdirSync(join(f.root,'dist')).length,8);
+  assert.equal(readdirSync(join(f.root,'dist')).length,9);
 });
 for(const name of ['.env','debug.log','audit/report.json','api/contact.js','../escape.txt']) {
   test('reject unexpected publish path '+name,()=>{
