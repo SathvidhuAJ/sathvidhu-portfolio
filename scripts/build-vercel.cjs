@@ -2,7 +2,7 @@ const { readFileSync, readdirSync, lstatSync, copyFileSync, mkdtempSync, renameS
 const { resolve, join, relative, isAbsolute } = require('node:path');
 const root = resolve(__dirname, '..');
 const output = resolve(root, 'dist');
-const expected = ['about.html', 'app.js', 'index.html', 'projects.js', 'robots.txt', 'sathvidhu-logo.png', 'sitemap.xml', 'theme.css'];
+const expected = ['about.html', 'app.js', 'google7afd4d70b6f627f8.html', 'index.html', 'projects.js', 'robots.txt', 'sathvidhu-logo.png', 'sitemap.xml', 'theme.css'];
 function validate(directory) {
   if (!lstatSync(directory).isDirectory() || lstatSync(directory).isSymbolicLink()) throw new Error('Unsafe publish directory');
   const files = [];
